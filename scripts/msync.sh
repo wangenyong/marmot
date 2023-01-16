@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #1. 判断参数个数
-if [ $# -lt 1 ]
-then
+if [ $# -lt 1 ]; then
     echo Not Enough Arguement!
     exit;
 fi
