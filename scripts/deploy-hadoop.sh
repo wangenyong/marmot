@@ -1,9 +1,6 @@
 #!/bin/bash
 
-
-# hadoop version "3.1.3" 
-
-
+# hadoop version "3.1.3"
 
 # 判断大数据项目根目录是否已经创建
 if [ ! -d /opt/marmot ]; then
@@ -25,20 +22,20 @@ else
     fi
 
     # 配置 Hadoop Jdk 环境变量
-    if [ `grep -c "HADOOP_HOME" $MARMOT_PROFILE` -eq '0' ]; then
+    if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
         cd /opt/marmot/hadoop-*
-        HADOOP_PATH="HADOOP_HOME="`pwd`
+        HADOOP_PATH="HADOOP_HOME="$(pwd)
         cd -
 
-        echo -e >> $MARMOT_PROFILE
-        echo '#***** HADOOP_HOME *****' >> $MARMOT_PROFILE
-        echo "export "$HADOOP_PATH >> $MARMOT_PROFILE
-        echo 'export PATH=$PATH:$HADOOP_HOME/bin' >> $MARMOT_PROFILE
-        echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >> $MARMOT_PROFILE
+        echo -e >>$MARMOT_PROFILE
+        echo '#***** HADOOP_HOME *****' >>$MARMOT_PROFILE
+        echo "export "$HADOOP_PATH >>$MARMOT_PROFILE
+        echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
+        echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
 
         echo "hadoop profile setting success!"
     fi
-    
+
     echo "hadoop install success!"
 
 fi

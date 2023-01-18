@@ -7,7 +7,7 @@ SSH_CONFIG_FILE="/etc/ssh/ssh_config"
 
 log_info "开始配置SSH免密登录"
 
-if [ `grep -c "StrictHostKeyChecking no" $SSH_CONFIG_FILE` -eq '0' ]; then
+if [ $(grep -c "StrictHostKeyChecking no" $SSH_CONFIG_FILE) -eq '0' ]; then
     sed -i '/StrictHostKeyChecking/s/^#//; /StrictHostKeyChecking/s/ask/no/' $SSH_CONFIG_FILE
 fi
 
