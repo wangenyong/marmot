@@ -60,7 +60,7 @@ SECONDARY_WEB_CONFIG='
     </property>'
 
 HDFS_SITE_FILE=$HADOOP_HOME/etc/hadoop/hdfs-site.xml
-# 判断 hdfs_site.xml 文件是否已经配置
+# 判断 hdfs-site.xml 文件是否已经配置
 if [ $(grep -c "dfs.namenode.http-address" $HDFS_SITE_FILE) -eq '0' ]; then
     sed -in '/<\/configuration>/i\'"$WEB_CONFIG" $HDFS_SITE_FILE
     sed -in '/<\/configuration>/i\'"$SECONDARY_WEB_CONFIG" $HDFS_SITE_FILE
@@ -68,3 +68,60 @@ if [ $(grep -c "dfs.namenode.http-address" $HDFS_SITE_FILE) -eq '0' ]; then
 else
     log_warn "hdfs-site.xml 文件已配置！"
 fi
+
+
+#
+# 配置 hadoop yarn yarn-site.xml 文件
+#
+MR_CONFIG='
+    <!-- 指定MR走shuffle -->\
+    <property>\
+        <name>yarn.nodemanager.aux-services</name>\
+        <value>mapreduce_shuffle</value>\
+    </property>'
+
+RM_HOSTNAME='
+    <!-- 指定ResourceManager的地址-->\
+    <property>\
+        <name>yarn.resourcemanager.hostname</name>\
+        <value>'$(sed -n '2p' $HOME_DIR/conf/workers)'</value>\
+    </property>'
+
+ENV_CONFIG='
+    <!-- 环境变量的继承 -->\
+    <property>\
+        <name>yarn.nodemanager.env-whitelist</name>\
+        <value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME</value>\
+    </property>'
+
+YARN_SITE_FILE=$HADOOP_HOME/etc/hadoop/yarn-site.xml
+# 判断 yarn-site.xml 文件是否已经配置
+if [ $(grep -c "yarn.nodemanager.aux-services" $YARN_SITE_FILE) -eq '0' ]; then
+    sed -in '/<\/configuration>/i\'"$MR_CONFIG" $YARN_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$RM_HOSTNAME" $YARN_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$ENV_CONFIG" $YARN_SITE_FILE
+    log_info "yarn-site.xml 文件配置完成！"
+else
+    log_warn "yarn-site.xml 文件已配置！"
+fi
+
+
+#
+# 配置 hadoop mapReduce mapred-site.xml 文件
+#
+MR_YARN_CONFIG='
+    <!-- 指定MapReduce程序运行在Yarn上 -->\
+    <property>\
+        <name>mapreduce.framework.name</name>\
+        <value>yarn</value>\
+    </property>'
+
+MR_SITE_FILE=$HADOOP_HOME/etc/hadoop/mapred-site.xml
+# 判断 mapred-site.xml 文件是否已经配置
+if [ $(grep -c "mapreduce.framework.name" $MR_SITE_FILE) -eq '0' ]; then
+    sed -in '/<\/configuration>/i\'"$MR_YARN_CONFIG" $MR_SITE_FILE
+    log_info "mapred-site.xml 文件配置完成！"
+else
+    log_warn "mapred-site.xml 文件已配置！"
+fi
+
