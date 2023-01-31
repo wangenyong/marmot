@@ -12,12 +12,12 @@ source $SCRIPT_DIR/log.sh
 # 判断大数据项目根目录是否已经创建
 if [ ! -d /opt/marmot ]; then
     mkdir /opt/marmot
-    echo "marmot folder created!"
+    log_info "marmot folder created!"
 fi
 
 # 判断 Java Jdk 是否已经安装
 if [ -d /opt/marmot/hadoop-* ]; then
-    echo "hadoop has been installed!"
+    log_info "hadoop has been installed!"
 else
     # 安装 Java Jdk
     tar -zxvf $HOME_DIR/softwares/hadoop-3.1.3.tar.gz -C /opt/marmot/
@@ -40,9 +40,9 @@ else
         echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
         echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
 
-        echo "hadoop profile setting success!"
+        log_info "hadoop profile setting success!"
     fi
 
-    echo "hadoop install success!"
+    log_info "hadoop install success!"
 
 fi
