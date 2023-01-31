@@ -9,17 +9,19 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
 
+log_info "========== 开始配置 JAVA JDK =========="
+
 # 判断大数据项目根目录是否已经创建
 if [ ! -d /opt/marmot ]; then
     mkdir /opt/marmot
-    log_info "marmot folder created!"
+    log_info "创建 marmot 项目目录完成!"
 fi
 # 判断 Java Jdk 是否已经安装
 if [ -d /opt/marmot/jdk1.8.0_* ]; then
-    log_info "jdk has been installed!"
+    log_warn "JAVA JDK 已经安装!"
 else
     # 安装 Java Jdk
-    tar -zxvf $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz -C /opt/marmot/
+    tar -zxf $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz -C /opt/marmot/
 
     # 创建环境变量文件
     MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"
@@ -37,9 +39,11 @@ else
         echo "export "$JDK_PATH >>$MARMOT_PROFILE
         echo 'export PATH=$PATH:$JAVA_HOME/bin' >>$MARMOT_PROFILE
 
-        log_info "jdk profile setting success!"
+        source /etc/profile
+
+        log_info "JAVA_HOME 环境变量设置完成: "$JAVA_HOME
     fi
 
-    log_info "jdk install success!"
+    log_info "========== JAVA JDK 配置完成 =========="
 
 fi

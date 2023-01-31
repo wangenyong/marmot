@@ -6,6 +6,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
+# 加载环境变量
+source /etc/profile
 
 #
 # 配置 hadoop core-site.xml 文件

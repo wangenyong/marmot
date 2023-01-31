@@ -17,7 +17,12 @@ case "$1" in
 install)
     # 配置 SSH 免密登录
     sh $SCRIPT_DIR/auto-ssh-config.sh
-    
+    # 安装配置 JAVA SDK
+    sh $SCRIPT_DIR/deploy-jdk.sh
+    # 安装 Hadoop
+    sh $SCRIPT_DIR/deploy-hadoop.sh
+    # 配置 Hadoop
+    sh $SCRIPT_DIR/config-hadoop.sh
     ;;
 config)
     case "$2" in

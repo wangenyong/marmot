@@ -9,18 +9,20 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
 
+log_info "========== 开始配置 HADOOP =========="
+
 # 判断大数据项目根目录是否已经创建
 if [ ! -d /opt/marmot ]; then
     mkdir /opt/marmot
-    log_info "marmot folder created!"
+    log_info "创建 marmot 项目目录完成!"
 fi
 
 # 判断 Java Jdk 是否已经安装
 if [ -d /opt/marmot/hadoop-* ]; then
-    log_info "hadoop has been installed!"
+    log_info "Hadoop 已经安装!"
 else
     # 安装 Java Jdk
-    tar -zxvf $HOME_DIR/softwares/hadoop-3.1.3.tar.gz -C /opt/marmot/
+    tar -zxf $HOME_DIR/softwares/hadoop-3.1.3.tar.gz -C /opt/marmot/
 
     # 创建环境变量文件
     MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"
@@ -40,9 +42,11 @@ else
         echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
         echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
 
-        log_info "hadoop profile setting success!"
+        source /etc/profile
+
+        log_info "HADOOP_HOME 环境变量设置完成: "$HADOOP_HOME
     fi
 
-    log_info "hadoop install success!"
+    log_warn "========== HADOOP 配置完成 =========="
 
 fi
