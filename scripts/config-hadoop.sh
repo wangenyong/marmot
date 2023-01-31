@@ -69,7 +69,6 @@ else
     log_warn "hdfs-site.xml 文件已配置！"
 fi
 
-
 #
 # 配置 hadoop yarn yarn-site.xml 文件
 #
@@ -105,7 +104,6 @@ else
     log_warn "yarn-site.xml 文件已配置！"
 fi
 
-
 #
 # 配置 hadoop mapReduce mapred-site.xml 文件
 #
@@ -125,3 +123,7 @@ else
     log_warn "mapred-site.xml 文件已配置！"
 fi
 
+#
+# 配置 workers
+#
+cat $HOME_DIR/conf/workers >>$HADOOP_HOME/etc/hadoop/workers

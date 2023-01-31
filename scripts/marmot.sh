@@ -9,25 +9,15 @@ source $SCRIPT_DIR/log.sh
 
 #1. 判断参数个数
 if [ $# -lt 1 ]; then
-    log_warn Not Enough Arguement!
+    log_warn 请输入命令参数!
     exit
 fi
 
 case "$1" in
 install)
-    case "$2" in
-    jdk)
-        log_info "install jdk"
-        exec ./deploy-jdk.sh
-        ;;
-    hadoop)
-        log_info "install hadoop"
-        exec ./deploy-hadoop.sh
-        ;;
-    *)
-        echo "default install (none of above)"
-        ;;
-    esac
+    # 配置 SSH 免密登录
+    sh $SCRIPT_DIR/auto-ssh-config.sh
+    
     ;;
 config)
     case "$2" in
