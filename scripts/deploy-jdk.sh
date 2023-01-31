@@ -2,6 +2,13 @@
 
 # java version "1.8.0_212"
 
+# 获取当前脚本所在目录和项目根目录
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+HOME_DIR="$(dirname $SCRIPT_DIR)"
+
+# 加载日志打印脚本
+source $SCRIPT_DIR/log.sh
+
 # 判断大数据项目根目录是否已经创建
 if [ ! -d /opt/marmot ]; then
     mkdir /opt/marmot
@@ -12,7 +19,7 @@ if [ -d /opt/marmot/jdk1.8.0_* ]; then
     echo "jdk has been installed!"
 else
     # 安装 Java Jdk
-    tar -zxvf ../softwares/jdk-8u212-linux-x64.tar.gz -C /opt/marmot/
+    tar -zxvf $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz -C /opt/marmot/
 
     # 创建环境变量文件
     MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"
