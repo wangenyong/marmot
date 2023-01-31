@@ -25,7 +25,7 @@ install)
     sh $SCRIPT_DIR/config-hadoop.sh
     # 集群分发
     sh $SCRIPT_DIR/msync.sh /opt/marmot
-    sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env
+    sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
     ;;
 start)
     source /etc/profile
@@ -56,6 +56,12 @@ show)
     IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
     for host in ${lines[@]}; do
         ssh $host jps
+    done
+    ;;
+delete)
+    IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
+    for host in ${lines[@]}; do
+        ssh $host rm -rf /opt/marmot
     done
     ;;
 *)

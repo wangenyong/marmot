@@ -32,7 +32,7 @@ for host in ${lines[@]}; do
             #6. 获取当前文件的名称
             fname=$(basename $file)
             ssh $host "mkdir -p $pdir"
-            rsync -av $pdir/$fname $host:$pdir
+            rsync -a $pdir/$fname $host:$pdir
         else
             echo $file does not exists!
         fi
