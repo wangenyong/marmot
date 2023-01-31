@@ -42,6 +42,8 @@ else
         source /etc/profile
 
         log_info "JAVA_HOME 环境变量设置完成: "$JAVA_HOME
+    else
+        log_warn "JAVA_HOME 环境变量已配置"
     fi
 
     log_info "========== JAVA JDK 配置完成 =========="

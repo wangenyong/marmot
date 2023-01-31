@@ -19,7 +19,7 @@ fi
 
 # 判断 Java Jdk 是否已经安装
 if [ -d /opt/marmot/hadoop-* ]; then
-    log_info "Hadoop 已经安装!"
+    log_warn "Hadoop 已经安装!"
 else
     # 安装 Java Jdk
     tar -zxf $HOME_DIR/softwares/hadoop-3.1.3.tar.gz -C /opt/marmot/
@@ -45,8 +45,10 @@ else
         source /etc/profile
 
         log_info "HADOOP_HOME 环境变量设置完成: "$HADOOP_HOME
+    else
+        log_warn "HADOOP_HOME 环境变量已配置"
     fi
 
-    log_warn "========== HADOOP 配置完成 =========="
+    log_info "========== HADOOP 配置完成 =========="
 
 fi

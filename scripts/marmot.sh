@@ -23,23 +23,40 @@ install)
     sh $SCRIPT_DIR/deploy-hadoop.sh
     # 配置 Hadoop
     sh $SCRIPT_DIR/config-hadoop.sh
-    ;;
-config)
-    case "$2" in
-    ssh)
-        log_info "config auto ssh"
-        exec ./auto-ssh-config.sh
-        ;;
-    2 | 3)
-        echo "item = 2 or item = 3"
-        ;;
-    *)
-        echo "default (none of above)"
-        ;;
-    esac
+    # 集群分发
+    sh $SCRIPT_DIR/msync.sh /opt/marmot
+    sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env
     ;;
 start)
-    echo "start"
+    source /etc/profile
+
+    if [ ! -d $HADOOP_HOME/data ]; then
+        log_info "格式化 NameNode"
+        hdfs namenode -format
+    fi
+
+    log_info "========== 启动 Hadoop 集群 =========="
+    log_info "---------- 启动 Hdfs ----------"
+    ssh hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+    log_info "---------- 启动 Yarn ----------"
+    ssh hadoop102 "$HADOOP_HOME/sbin/start-yarn.sh"
+    log_info "---------- 启动 Historyserver ----------"
+    ssh hadoop101 "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+    ;;
+stop)
+    log_info "========== 关闭 Hadoop 集群 =========="
+    log_info "---------- 关闭 Historyserver ----------"
+    ssh hadoop101 "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
+    log_info "---------- 关闭 Yarn ----------"
+    ssh hadoop102 "$HADOOP_HOME/sbin/stop-yarn.sh"
+    log_info "---------- 关闭 Hdfs ----------"
+    ssh hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
+    ;;
+show)
+    IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
+    for host in ${lines[@]}; do
+        ssh $host jps
+    done
     ;;
 *)
     echo "default (none of above)"

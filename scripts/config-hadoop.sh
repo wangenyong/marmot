@@ -105,7 +105,7 @@ LOG_AGGREGATION_CONFIG='
 LOG_SERVER_CONFIG='
     <!-- 设置日志聚集服务器地址 -->\
     <property>\
-        <name>yarn.log.server.url</name>\  
+        <name>yarn.log.server.url</name>\
         <value>'$(head -n 1 $HOME_DIR/conf/workers)':19888/jobhistory/logs</value>\
     </property>'
 
