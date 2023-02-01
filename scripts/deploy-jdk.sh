@@ -21,7 +21,7 @@ if [ -d /opt/marmot/jdk1.8.0_* ]; then
     log_warn "JAVA JDK 已经安装!"
 else
     # 安装 Java Jdk
-    tar -zxf $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz -C /opt/marmot/
+    pv $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz | tar -zx -C /opt/marmot/
 
     # 创建环境变量文件
     MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"

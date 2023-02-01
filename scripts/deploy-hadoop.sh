@@ -21,8 +21,8 @@ fi
 if [ -d /opt/marmot/hadoop-* ]; then
     log_warn "Hadoop 已经安装!"
 else
-    # 安装 Java Jdk
-    tar -zxf $HOME_DIR/softwares/hadoop-3.1.3.tar.gz -C /opt/marmot/
+    # 安装 Hadoop
+    pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C /opt/marmot/
 
     # 创建环境变量文件
     MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"

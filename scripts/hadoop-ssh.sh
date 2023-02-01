@@ -50,7 +50,7 @@ function add_user() {
 
 function ssh_auth() {
     echo "" >$HADOOP_USER-authorized_keys
-    echo ">>> Generating SSH key at each host"
+    log_info ">>> Generating SSH key at each host"
     cmd_rm='rm -f ~/.ssh/id_rsa* ~/.ssh/known_hosts'
     cmd_gen='ssh-keygen -q -N "" -t rsa -f ~/.ssh/id_rsa'
     cmd_cat='cat ~/.ssh/id_rsa.pub'
@@ -63,11 +63,11 @@ function ssh_auth() {
         sshpass -p $HADOOP_PASS ssh $HADOOP_USER@$host $cmd_cat >>$HADOOP_USER-authorized_keys
     done
 
-    echo ">>> All public keys copied to localhost"
+    log_info ">>> All public keys copied to localhost"
     #ls -l /home/$HADOOP_USER/.ssh/authorized_keys
     cat $HADOOP_USER-authorized_keys
 
-    echo ">>> Distributing all public keys"
+    log_info ">>> Distributing all public keys"
     cmd_chmod="chmod 600 /home/$HADOOP_USER/.ssh/authorized_keys"
     for host in $HOSTNAME_LIST; do
         sshpass -p $ADMIN_PASS scp $HADOOP_USER-authorized_keys $ADMIN_USER@$host:~/.ssh/authorized_keys
@@ -77,6 +77,7 @@ function ssh_auth() {
 }
 
 function close_firewall() {
+    log_info ">>> Close firewall"
     cmd_stop_firewall="systemctl stop firewalld.service"
     cmd_disable_firewall="systemctl disable firewalld.service"
     cmd_firewall_state="firewall-cmd --state"
@@ -109,7 +110,7 @@ function ssh_test() {
 SSH_CONF="/etc/ssh/ssh_config"
 
 function system_conf() {
-    echo ">>> Distributing system configurations"
+    log_info ">>> Distributing system configurations"
 
     if [ $(grep -c "StrictHostKeyChecking no" $SSH_CONF) -eq '0' ]; then
         sed -i '/StrictHostKeyChecking/s/^#//; /StrictHostKeyChecking/s/ask/no/' $SSH_CONF
