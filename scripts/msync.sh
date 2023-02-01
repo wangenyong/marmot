@@ -17,7 +17,7 @@ IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
 
 #2. 遍历集群所有机器
 for host in ${lines[@]}; do
-    echo ==================== $host ====================
+    echo ==================== $host $1 ====================
     #3. 遍历所有目录，挨个发送
 
     for file in $@; do
