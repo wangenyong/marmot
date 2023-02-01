@@ -55,6 +55,9 @@ function ssh_auth() {
     cmd_gen='ssh-keygen -q -N "" -t rsa -f ~/.ssh/id_rsa'
     cmd_cat='cat ~/.ssh/id_rsa.pub'
     for host in $HOSTNAME_LIST; do
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_rm
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_gen
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_cat >>$HADOOP_USER-authorized_keys
         sshpass -p $HADOOP_PASS ssh $HADOOP_USER@$host $cmd_rm
         sshpass -p $HADOOP_PASS ssh $HADOOP_USER@$host $cmd_gen
         sshpass -p $HADOOP_PASS ssh $HADOOP_USER@$host $cmd_cat >>$HADOOP_USER-authorized_keys
@@ -67,6 +70,7 @@ function ssh_auth() {
     echo ">>> Distributing all public keys"
     cmd_chmod="chmod 600 /home/$HADOOP_USER/.ssh/authorized_keys"
     for host in $HOSTNAME_LIST; do
+        sshpass -p $ADMIN_PASS scp $HADOOP_USER-authorized_keys $ADMIN_USER@$host:~/.ssh/authorized_keys
         sshpass -p $HADOOP_PASS scp $HADOOP_USER-authorized_keys $HADOOP_USER@$host:/home/$HADOOP_USER/.ssh/authorized_keys
         sshpass -p $HADOOP_PASS ssh $HADOOP_USER@$host $cmd_chmod
     done

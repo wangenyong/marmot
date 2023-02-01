@@ -16,13 +16,15 @@ fi
 case "$1" in
 install)
     # 配置 SSH 免密登录
-    sh $SCRIPT_DIR/auto-ssh-config.sh
+    sh $SCRIPT_DIR/hadoop-ssh.sh go
     # 安装配置 JAVA SDK
     sh $SCRIPT_DIR/deploy-jdk.sh
     # 安装 Hadoop
     sh $SCRIPT_DIR/deploy-hadoop.sh
     # 配置 Hadoop
     sh $SCRIPT_DIR/config-hadoop.sh
+    # 修改项目权限
+    chown marmot:marmot -R /opt/marmot
     # 集群分发
     sh $SCRIPT_DIR/msync.sh /opt/marmot
     sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
@@ -37,20 +39,20 @@ start)
 
     log_info "========== 启动 Hadoop 集群 =========="
     log_info "---------- 启动 Hdfs ----------"
-    ssh hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
     log_info "---------- 启动 Yarn ----------"
-    ssh hadoop102 "$HADOOP_HOME/sbin/start-yarn.sh"
+    ssh marmot@hadoop102 "$HADOOP_HOME/sbin/start-yarn.sh"
     log_info "---------- 启动 Historyserver ----------"
-    ssh hadoop101 "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+    ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon start historyserver"
     ;;
 stop)
     log_info "========== 关闭 Hadoop 集群 =========="
     log_info "---------- 关闭 Historyserver ----------"
-    ssh hadoop101 "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
+    ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
     log_info "---------- 关闭 Yarn ----------"
-    ssh hadoop102 "$HADOOP_HOME/sbin/stop-yarn.sh"
+    ssh marmot@hadoop102 "$HADOOP_HOME/sbin/stop-yarn.sh"
     log_info "---------- 关闭 Hdfs ----------"
-    ssh hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
+    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
     ;;
 show)
     IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
