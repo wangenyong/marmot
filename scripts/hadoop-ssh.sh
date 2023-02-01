@@ -64,8 +64,8 @@ function ssh_auth() {
     done
 
     log_info ">>> All public keys copied to localhost"
-    #ls -l /home/$HADOOP_USER/.ssh/authorized_keys
-    cat $HADOOP_USER-authorized_keys
+    # ls -l /home/$HADOOP_USER/.ssh/authorized_keys
+    # cat $HADOOP_USER-authorized_keys
 
     log_info ">>> Distributing all public keys"
     cmd_chmod="chmod 600 /home/$HADOOP_USER/.ssh/authorized_keys"
