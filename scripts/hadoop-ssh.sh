@@ -12,10 +12,9 @@ IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
 
 HOSTNAME_LIST=${lines[@]}
 
-
 ADMIN_USER="root"
 ADMIN_PASS="660011"
-HADOOP_USER="hadoop"
+HADOOP_USER="marmot"
 HADOOP_PASS="hadoop"
 
 LOCAL_HOST=$(hostname)
@@ -91,11 +90,16 @@ function ssh_test() {
     return
 }
 
-HOSTS_CONF="/etc/hosts"
+# HOSTS_CONF="/etc/hosts"
 SSH_CONF="/etc/ssh/ssh_config"
 
 function system_conf() {
     echo ">>> Distributing system configurations"
+
+    if [ $(grep -c "StrictHostKeyChecking no" $SSH_CONF) -eq '0' ]; then
+        sed -i '/StrictHostKeyChecking/s/^#//; /StrictHostKeyChecking/s/ask/no/' $SSH_CONF
+    fi
+
     for host in $HOSTNAME_LIST; do
         if [ "$host" == "$LOCAL_HOST" ]; then
             echo "Skipping localhost $LOCAL_HOST"
@@ -104,8 +108,8 @@ function system_conf() {
 
         echo "$SSH_CONF to $host"
         sshpass -p $ADMIN_PASS scp $SSH_CONF $ADMIN_USER@$host:$SSH_CONF
-        echo "$HOSTS_CONF to $host"
-        sshpass -p $ADMIN_PASS scp $HOSTS_CONF $ADMIN_USER@$host:$HOSTS_CONF
+        # echo "$HOSTS_CONF to $host"
+        # sshpass -p $ADMIN_PASS scp $HOSTS_CONF $ADMIN_USER@$host:$HOSTS_CONF
     done
 }
 function print_info() {
@@ -114,6 +118,7 @@ function print_info() {
 }
 case "$1" in
 go)
+    hostname_list_print
     system_conf
     add_user
     ssh_auth
