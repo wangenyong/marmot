@@ -15,7 +15,7 @@ fi
 
 case "$1" in
 install)
-    # 配置 SSH 免密登录
+    # 配置 SSH 免密登录，关闭防火墙
     sh $SCRIPT_DIR/hadoop-ssh.sh go
     # 安装配置 JAVA SDK
     sh $SCRIPT_DIR/deploy-jdk.sh
@@ -34,7 +34,7 @@ start)
 
     if [ ! -d $HADOOP_HOME/data ]; then
         log_info "格式化 NameNode"
-        hdfs namenode -format
+        ssh marmot@hadoop101 "hdfs namenode -format"
     fi
 
     log_info "========== 启动 Hadoop 集群 =========="
@@ -57,6 +57,7 @@ stop)
 show)
     IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
     for host in ${lines[@]}; do
+    echo =============== $host ===============
         ssh $host jps
     done
     ;;

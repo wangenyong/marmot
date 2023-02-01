@@ -76,6 +76,17 @@ function ssh_auth() {
     done
 }
 
+function close_firewall() {
+    cmd_stop_firewall="systemctl stop firewalld.service"
+    cmd_disable_firewall="systemctl disable firewalld.service"
+    cmd_firewall_state="firewall-cmd --state"
+    for host in $HOSTNAME_LIST; do
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_stop_firewall
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_disable_firewall
+        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
+    done
+}
+
 function ssh_subtest() {
     for host in $HOSTNAME_LIST; do
         ssh $HADOOP_USER@$host hostname
@@ -123,6 +134,7 @@ function print_info() {
 case "$1" in
 go)
     hostname_list_print
+    close_firewall
     system_conf
     add_user
     ssh_auth
