@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Spark version "3.0.0"
+
 # 获取当前脚本所在目录和项目根目录
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 HOME_DIR="$(dirname $SCRIPT_DIR)"
