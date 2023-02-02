@@ -7,11 +7,6 @@ source $SCRIPT_DIR/log.sh
 
 log_info "========== 开始配置 SPARK =========="
 
-# 判断大数据项目根目录是否已经创建
-if [ ! -d /opt/marmot ]; then
-    mkdir /opt/marmot
-    log_info "创建 marmot 项目目录完成!"
-fi
 # 判断 Spark 是否已经安装
 if [ -d /opt/marmot/spark-3.0.0-* ]; then
     log_warn "Spark 已经安装!"
@@ -80,8 +75,7 @@ fi
 SPARK_ENV=$SPARK_HOME/conf/spark-env.sh
 
 if [ ! -f $SPARK_ENV ]; then
-    mv $SPARK_HOME/conf/spark-env.sh.template $SPARK_ENV
-    echo -e >>$SPARK_ENV
+    touch $SPARK_ENV
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_ENV
     echo 'export JAVA_HOME='$JAVA_HOME >>$SPARK_ENV
     echo 'YARN_CONF_DIR='$HADOOP_HOME'/etc/hadoop' >>$SPARK_ENV
@@ -95,12 +89,29 @@ fi
 #
 SPARK_DEFAULTS=$SPARK_HOME/conf/spark-defaults.conf
 if [ ! -f $SPARK_DEFAULTS ]; then
-    mv $SPARK_HOME/conf/spark-defaults.conf.template $SPARK_DEFAULTS
-    echo -e >>$SPARK_DEFAULTS
+    touch $SPARK_DEFAULTS
+    # 启动 HDFS 创建 directory 目录
+    # ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+    # ssh marmot@hadoop101 "hadoop fs -mkdir /directory"
+    # ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
+
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
     echo "spark.eventLog.dir hdfs://$(head -n 1 $HOME_DIR/conf/workers):8020/directory" >>$SPARK_DEFAULTS
-    log_info "Spark spark-env.xml 文件配置完成！"
+    echo "spark.yarn.historyServer.address=$(head -n 1 $HOME_DIR/conf/workers):18080" >>$SPARK_DEFAULTS
+    echo "spark.history.ui.port=18080" >>$SPARK_DEFAULTS
+
+    SPARK_HISTORY_OPTS='
+export SPARK_HISTORY_OPTS="\
+-Dspark.history.ui.port=18080\
+-Dspark.history.fs.logDirectory=hdfs://'$(head -n 1 $HOME_DIR/conf/workers)':8020/directory\
+-Dspark.history.retainedApplications=30"'
+    sed -in '$a\'"$SPARK_HISTORY_OPTS" $SPARK_ENV
+
+    log_info "Spark 历史服务器配置完成！"
 else
-    log_warn "Saprk spark-env.xml 文件已配置！"
+    log_warn "Saprk 历史服务器已配置！"
 fi
+
+# 修改 Spark 项目权限为 marmot:marmot
+chown marmot:marmot -R $SPARK_HOME

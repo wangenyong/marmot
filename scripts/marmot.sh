@@ -23,29 +23,36 @@ install)
     sh $SCRIPT_DIR/deploy-hadoop.sh
     # 修改项目权限
     chown marmot:marmot -R /opt/marmot
-    # 集群分发
+    # 集群分发 Java 和 Hadoop
     sh $SCRIPT_DIR/msync.sh /opt/marmot
+    # 集群分发环境变量
     sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
+    # 安装配置 Spark
+    sh $SCRIPT_DIR/deploy-spark.sh
     ;;
 start)
     source /etc/profile
-
-    if [ ! -d $HADOOP_HOME/data ]; then
-        log_info "格式化 NameNode"
-        ssh marmot@hadoop101 "hdfs namenode -format"
-    fi
 
     log_info "========== 启动 Hadoop 集群 =========="
     log_info "---------- 启动 Hdfs ----------"
     ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
     log_info "---------- 启动 Yarn ----------"
     ssh marmot@hadoop102 "$HADOOP_HOME/sbin/start-yarn.sh"
-    log_info "---------- 启动 Historyserver ----------"
+    log_info "---------- 启动 Hadoop Historyserver ----------"
     ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+    if [ -d "$SPARK_HOME" ]; then
+        log_info "---------- 启动 Spark Historyserver ----------"
+        ssh marmot@hadoop101 "$SPARK_HOME/sbin/start-history-server.sh"
+    fi
+    
     ;;
 stop)
     log_info "========== 关闭 Hadoop 集群 =========="
-    log_info "---------- 关闭 Historyserver ----------"
+        if [ -d "$SPARK_HOME" ]; then
+        log_info "---------- 关闭 Spark Historyserver ----------"
+        ssh marmot@hadoop101 "$SPARK_HOME/sbin/stop-history-server.sh"
+    fi
+    log_info "---------- 关闭 Hadoop Historyserver ----------"
     ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
     log_info "---------- 关闭 Yarn ----------"
     ssh marmot@hadoop102 "$HADOOP_HOME/sbin/stop-yarn.sh"

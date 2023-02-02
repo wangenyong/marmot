@@ -216,3 +216,9 @@ fi
 # 配置 workers
 #
 cat $HOME_DIR/conf/workers >$HADOOP_HOME/etc/hadoop/workers
+
+# 格式化 NameNode
+if [ ! -d $HADOOP_HOME/data ]; then
+    log_info "格式化 NameNode"
+    ssh marmot@hadoop101 "hdfs namenode -format"
+fi
