@@ -39,6 +39,9 @@ else
 
         log_info "HIVE_HOME 环境变量设置完成: "$HIVE_HOME
 
+        # 解决日志冲突问题
+        mv $HIVE_HOME/lib/log4j-slf4j-impl-2.10.0.jar $HIVE_HOME/lib/log4j-slf4j-impl-2.10.0.jar.bak
+
     else
         log_warn "HIVE_HOME 环境变量已配置"
     fi
@@ -47,5 +50,52 @@ else
     chown marmot:marmot -R $HIVE_HOME
 
     log_info "========== HIVE 配置完成 =========="
+
+fi
+
+
+#
+# hive 元数据配置到 mysql
+#
+
+HIVE_SITE_FILE=$HIVE_HOME/conf/hive-site.xml
+
+if [ ! -f $HIVE_SITE_FILE ]; then
+    # 拷贝 hive-site.xml 模板文件
+    cp $HOME_DIR/template/configuration.xml $HIVE_SITE_FILE
+    # 拷贝 mysql 驱动
+    cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $HIVE_HOME/lib/
+    # 设置拷贝文件的权限
+    chown marmot:marmot -R $HIVE_HOME
+
+
+    MYSQL_URL_CONFIG='  
+    <property>\
+        <name>javax.jdo.option.ConnectionURL</name>\
+        <value>jdbc:mysql://'$(head -n 1 $HOME_DIR/conf/workers)':3306/metastore?useSSL=false</value>\
+    </property>'
+
+    MYSQL_DRIVER_NAME_CONFIG='
+    <property>\
+        <name>javax.jdo.option.ConnectionDriverName</name>\
+        <value>com.mysql.jdbc.Driver</value>\
+    </property>'
+
+    MYSQL_USERNAME_CONFIG='
+    <property>\
+        <name>javax.jdo.option.ConnectionUserName</name>\
+        <value>root</value>\
+    </property>'
+
+    MYSQL_PASSWD_CONFIG='
+    <property>\
+        <name>javax.jdo.option.ConnectionPassword</name>\
+        <value>Qs23=zs32</value>\
+    </property>'
+
+
+    
+    sed -in '/<\/configuration>/i\'"$MYSQL_URL_CONFIG" $HIVE_SITE_FILE
+
 
 fi
