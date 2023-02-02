@@ -19,10 +19,8 @@ install)
     sh $SCRIPT_DIR/hadoop-ssh.sh go
     # 安装配置 JAVA SDK
     sh $SCRIPT_DIR/deploy-jdk.sh
-    # 安装 Hadoop
+    # 安装配置 Hadoop
     sh $SCRIPT_DIR/deploy-hadoop.sh
-    # 配置 Hadoop
-    sh $SCRIPT_DIR/config-hadoop.sh
     # 修改项目权限
     chown marmot:marmot -R /opt/marmot
     # 集群分发
