@@ -21,8 +21,6 @@ install)
     sh $SCRIPT_DIR/deploy-jdk.sh
     # 安装配置 Hadoop
     sh $SCRIPT_DIR/deploy-hadoop.sh
-    # 修改项目权限
-    chown marmot:marmot -R /opt/marmot
     # 集群分发 Java 和 Hadoop
     sh $SCRIPT_DIR/msync.sh /opt/marmot
     # 集群分发环境变量

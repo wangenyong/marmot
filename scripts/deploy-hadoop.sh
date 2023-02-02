@@ -49,6 +49,9 @@ else
         log_warn "HADOOP_HOME 环境变量已配置"
     fi
 
+    # 修改项目权限
+    chown marmot:marmot -R $HADOOP_HOME
+
     log_info "========== HADOOP 配置完成 =========="
 
 fi

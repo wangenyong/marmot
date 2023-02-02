@@ -34,9 +34,13 @@ else
         source /etc/profile
 
         log_info "SPARK_PATH 环境变量设置完成: "$SPARK_HOME
+
     else
         log_warn "SPARK_PATH 环境变量已配置"
     fi
+
+    # 修改 Spark 项目权限为 marmot:marmot
+    chown marmot:marmot -R $SPARK_HOME
 
     log_info "========== SPARK 配置完成 =========="
 
@@ -75,7 +79,7 @@ fi
 SPARK_ENV=$SPARK_HOME/conf/spark-env.sh
 
 if [ ! -f $SPARK_ENV ]; then
-    touch $SPARK_ENV
+    ssh marmot@hadoop101 "touch $SPARK_ENV"
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_ENV
     echo 'export JAVA_HOME='$JAVA_HOME >>$SPARK_ENV
     echo 'YARN_CONF_DIR='$HADOOP_HOME'/etc/hadoop' >>$SPARK_ENV
@@ -89,11 +93,11 @@ fi
 #
 SPARK_DEFAULTS=$SPARK_HOME/conf/spark-defaults.conf
 if [ ! -f $SPARK_DEFAULTS ]; then
-    touch $SPARK_DEFAULTS
+    ssh marmot@hadoop101 "touch $SPARK_DEFAULTS"
     # 启动 HDFS 创建 directory 目录
-    # ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
-    # ssh marmot@hadoop101 "hadoop fs -mkdir /directory"
-    # ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
+    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+    ssh marmot@hadoop101 "hadoop fs -mkdir /directory"
+    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
 
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
@@ -112,6 +116,3 @@ export SPARK_HISTORY_OPTS="\
 else
     log_warn "Saprk 历史服务器已配置！"
 fi
-
-# 修改 Spark 项目权限为 marmot:marmot
-chown marmot:marmot -R $SPARK_HOME

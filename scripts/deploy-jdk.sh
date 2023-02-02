@@ -46,6 +46,9 @@ else
         log_warn "JAVA_HOME 环境变量已配置"
     fi
 
+    # 修改项目权限
+    chown marmot:marmot -R $JAVA_HOME
+    
     log_info "========== JAVA JDK 配置完成 =========="
 
 fi
