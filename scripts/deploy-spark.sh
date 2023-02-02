@@ -37,10 +37,10 @@ else
 
         source /etc/profile
 
-        log_info "SPARK_PATH 环境变量设置完成: "$SPARK_HOME
+        log_info "SPARK_HOME 环境变量设置完成: "$SPARK_HOME
 
     else
-        log_warn "SPARK_PATH 环境变量已配置"
+        log_warn "SPARK_HOME 环境变量已配置"
     fi
 
     # 修改 Spark 项目权限为 marmot:marmot
