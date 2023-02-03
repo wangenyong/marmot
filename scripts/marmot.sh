@@ -48,6 +48,10 @@ install)
     sh $SCRIPT_DIR/msync.sh /opt/marmot
     # 集群分发环境变量
     sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
+    # 安装 Mysql
+    sh $SCRIPT_DIR/deploy-mysql.sh
+    # 安装配置 Hive
+    sh $SCRIPT_DIR/deploy-hive.sh
     # 安装配置 Spark
     sh $SCRIPT_DIR/deploy-spark.sh
     ;;

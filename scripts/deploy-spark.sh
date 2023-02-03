@@ -122,3 +122,12 @@ else
 fi
 
 
+#
+# spark on hive 配置
+#
+
+cp $HIVE_HOME/conf/hive-site.xml $SPARK_HOME/conf/
+cp $HADOOP_HOME/etc/hadoop/core-site.xml $SPARK_HOME/conf/
+cp $HADOOP_HOME/etc/hadoop/hdfs-site.xml $SPARK_HOME/conf/
+
+chown marmot:marmot -R $SPARK_HOME/conf
