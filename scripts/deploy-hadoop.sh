@@ -83,12 +83,26 @@ HDFS_USER_CONFIG='
         <value>marmot</value>\
     </property>'
 
+USER_MARMOT_HOSTS='
+    <property>\
+        <name>hadoop.proxyuser.marmot.hosts</name>\
+        <value>*</value>\
+    </property>'
+
+USER_MARMOT_GROUPS='
+    <property>\
+        <name>hadoop.proxyuser.marmot.groups</name>\
+        <value>*</value>\
+    </property>'
+
 CORE_SITE_FILE=$HADOOP_HOME/etc/hadoop/core-site.xml
 # 判断 core-site.xml 文件是否已经配置
 if [ $(grep -c "fs.defaultFS" $CORE_SITE_FILE) -eq '0' ]; then
     sed -in '/<\/configuration>/i\'"$NAME_NODE_CONFIG" $CORE_SITE_FILE
     sed -in '/<\/configuration>/i\'"$DATA_DIR_CONFIG" $CORE_SITE_FILE
     sed -in '/<\/configuration>/i\'"$HDFS_USER_CONFIG" $CORE_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$USER_MARMOT_HOSTS" $CORE_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$USER_MARMOT_GROUPS" $CORE_SITE_FILE
     log_info "core-site.xml 文件配置完成！"
 else
     log_warn "core-site.xml 文件已配置！"

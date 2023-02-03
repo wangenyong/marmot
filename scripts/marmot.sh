@@ -84,7 +84,7 @@ stop)
     log_info "---------- 关闭 Hdfs ----------"
     ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
     ;;
-show)
+status)
     IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
     for host in ${lines[@]}; do
         echo =============== $host ===============
