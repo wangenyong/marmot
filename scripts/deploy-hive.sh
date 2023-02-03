@@ -82,13 +82,13 @@ if [ ! -f $HIVE_SITE_FILE ]; then
     MYSQL_USERNAME_CONFIG='
     <property>\
         <name>javax.jdo.option.ConnectionUserName</name>\
-        <value>root</value>\
+        <value>marmot</value>\
     </property>'
 
     MYSQL_PASSWD_CONFIG='
     <property>\
         <name>javax.jdo.option.ConnectionPassword</name>\
-        <value>yee-ha7X</value>\
+        <value>Phee]d1f</value>\
     </property>'
 
     HIVE_WAREHOUSE_CONFIG='
@@ -134,10 +134,10 @@ if [ ! -f $HIVE_SITE_FILE ]; then
     </property>'
 
     HIVE_METASTORE_URIS='
-    <!-- 指定存储元数据要连接的地址 -->
-    <property>
-        <name>hive.metastore.uris</name>
-        <value>thrift://'$(head -n 1 $HOME_DIR/conf/workers)':9083</value>
+    <!-- 指定存储元数据要连接的地址 -->\
+    <property>\
+        <name>hive.metastore.uris</name>\
+        <value>thrift://'$(head -n 1 $HOME_DIR/conf/workers)':9083</value>\
     </property>'
 
     sed -in '/<\/configuration>/i\'"$MYSQL_URL_CONFIG" $HIVE_SITE_FILE
@@ -161,7 +161,19 @@ mysql -uroot -pyee-ha7X -e "use metastore"
 if [[ $? -ne 0 ]]; then
     log_info "创建元数据库 metastore"
     mysql -uroot -pyee-ha7X -e "create database metastore"
+    mysql -uroot -pyee-ha7X -e 'CREATE USER "marmot"@"%" IDENTIFIED BY "Phee]d1f"'
+    mysql -uroot -pyee-ha7X -e 'GRANT ALL ON metastore.* TO "marmot"@"%" IDENTIFIED BY "Phee]d1f"'
+    mysql -uroot -pyee-ha7X -e 'flush privileges'
+
     schematool -initSchema -dbType mysql -verbose
 else
     log_info "元数据库 metastore 已创建"
 fi 
+
+
+HIVE_LOG_DIR=$HIVE_HOME/logs
+if [ ! -d $HIVE_LOG_DIR ]; then
+log_info "创建 logs 文件夹"
+	mkdir -p $HIVE_LOG_DIR
+    chown marmot:marmot -R $HIVE_LOG_DIR
+fi
