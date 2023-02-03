@@ -127,7 +127,8 @@ fi
 #
 
 cp $HIVE_HOME/conf/hive-site.xml $SPARK_HOME/conf/
+cp $HIVE_HOME/lib/mysql-connector-java-5.1.27-bin.jar $SPARK_HOME/jars/
 cp $HADOOP_HOME/etc/hadoop/core-site.xml $SPARK_HOME/conf/
 cp $HADOOP_HOME/etc/hadoop/hdfs-site.xml $SPARK_HOME/conf/
 
-chown marmot:marmot -R $SPARK_HOME/conf
+chown marmot:marmot -R $SPARK_HOME
