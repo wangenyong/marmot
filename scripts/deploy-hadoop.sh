@@ -1,6 +1,12 @@
 #!/bin/bash
 
+#################################
+#
 # hadoop version "3.1.3"
+#
+# 配置 hadoop
+#
+#################################
 
 # 获取当前脚本所在目录和项目根目录
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -17,11 +23,11 @@ if [ ! -d /opt/marmot ]; then
     log_info "创建 marmot 项目目录完成!"
 fi
 
-# 判断 Java Jdk 是否已经安装
+# 判断 hadoop 是否已经安装
 if [ -d /opt/marmot/hadoop-* ]; then
     log_warn "Hadoop 已经安装!"
 else
-    # 安装 Hadoop
+    # 安装 hadoop
     pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C /opt/marmot/
 
     # 创建环境变量文件
@@ -30,7 +36,7 @@ else
         touch $MARMOT_PROFILE
     fi
 
-    # 配置 Hadoop Jdk 环境变量
+    # 配置 hadoop 环境变量
     if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
         cd /opt/marmot/hadoop-*
         HADOOP_PATH="HADOOP_HOME="$(pwd)
@@ -58,15 +64,19 @@ fi
 
 # 刷新环境变量
 source /etc/profile
+# 加载配置文件
+source $HOME_DIR/conf/config.conf
 
-#
-# 配置 hadoop core-site.xml 文件
-#
+IFS=',' read -ra workers <<<$HADOOP_WORKERS
+
+#################################
+# 配置 core-site.xml 文件
+#################################
 NAME_NODE_CONFIG='
     <!-- 指定 NameNode 的地址 -->\
     <property>\
         <name>fs.defaultFS</name>\
-        <value>hdfs://'$(head -n 1 $HOME_DIR/conf/workers)':8020</value>\
+        <value>hdfs://'${workers[0]}':8020</value>\
     </property>'
 
 DATA_DIR_CONFIG='
@@ -108,21 +118,21 @@ else
     log_warn "core-site.xml 文件已配置！"
 fi
 
-#
-# 配置 hadoop hdfs-site.xml 文件
-#
+#################################
+# 配置 hdfs-site.xml 文件
+#################################
 WEB_CONFIG='
     <!-- nn web端访问地址-->\
 	<property>\
         <name>dfs.namenode.http-address</name>\
-        <value>'$(head -n 1 $HOME_DIR/conf/workers)':9870</value>\
+        <value>'${workers[0]}':9870</value>\
     </property>'
 
 SECONDARY_WEB_CONFIG='
     <!-- 2nn web端访问地址-->\
     <property>\
         <name>dfs.namenode.secondary.http-address</name>\
-        <value>'$(sed -n '3p' $HOME_DIR/conf/workers)':9868</value>\
+        <value>'${workers[2]}':9868</value>\
     </property>'
 
 HDFS_SITE_FILE=$HADOOP_HOME/etc/hadoop/hdfs-site.xml
@@ -135,9 +145,9 @@ else
     log_warn "hdfs-site.xml 文件已配置！"
 fi
 
-#
-# 配置 hadoop yarn yarn-site.xml 文件
-#
+#################################
+# 配置 yarn-site.xml 文件
+#################################
 MR_CONFIG='
     <!-- 指定MR走shuffle -->\
     <property>\
@@ -149,7 +159,7 @@ RM_HOSTNAME='
     <!-- 指定ResourceManager的地址-->\
     <property>\
         <name>yarn.resourcemanager.hostname</name>\
-        <value>'$(sed -n '2p' $HOME_DIR/conf/workers)'</value>\
+        <value>'${workers[1]}'</value>\
     </property>'
 
 ENV_CONFIG='
@@ -170,7 +180,7 @@ LOG_SERVER_CONFIG='
     <!-- 设置日志聚集服务器地址 -->\
     <property>\
         <name>yarn.log.server.url</name>\
-        <value>'$(head -n 1 $HOME_DIR/conf/workers)':19888/jobhistory/logs</value>\
+        <value>'${workers[0]}':19888/jobhistory/logs</value>\
     </property>'
 
 LOG_RETAIN_CONFIG='
@@ -194,9 +204,9 @@ else
     log_warn "yarn-site.xml 文件已配置！"
 fi
 
-#
-# 配置 hadoop mapReduce mapred-site.xml 文件
-#
+#################################
+# 配置 mapred-site.xml 文件
+#################################
 MR_YARN_CONFIG='
     <!-- 指定MapReduce程序运行在Yarn上 -->\
     <property>\
@@ -208,14 +218,14 @@ HISTORY_ADDRESS_CONFIG='
     <!-- 历史服务器端地址 -->\
     <property>\
         <name>mapreduce.jobhistory.address</name>\
-        <value>'$(head -n 1 $HOME_DIR/conf/workers)':10020</value>\
+        <value>'${workers[0]}':10020</value>\
     </property>'
 
 HISTORY_WEB_CONFIG='
     <!-- 历史服务器 Web 端地址 -->\
     <property>\
         <name>mapreduce.jobhistory.webapp.address</name>\
-        <value>'$(head -n 1 $HOME_DIR/conf/workers)':19888</value>\
+        <value>'${workers[0]}':19888</value>\
     </property>'
 
 MR_SITE_FILE=$HADOOP_HOME/etc/hadoop/mapred-site.xml
@@ -229,9 +239,9 @@ else
     log_warn "mapred-site.xml 文件已配置！"
 fi
 
-#
+#################################
 # 配置 workers
-#
+#################################
 cat $HOME_DIR/conf/workers >$HADOOP_HOME/etc/hadoop/workers
 
 # 格式化 NameNode
