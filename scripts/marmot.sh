@@ -6,6 +6,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
+# 加载配置文件
+source $HOME_DIR/conf/config.conf
 
 function check_process() {
     pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print$2}')
@@ -89,8 +91,8 @@ stop)
     ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
     ;;
 status)
-    IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
-    for host in ${lines[@]}; do
+    IFS=',' read -ra array <<<$HADOOP_WORKERS
+    for host in ${array[@]}; do
         echo =============== $host ===============
         ssh $host jps
     done
@@ -99,8 +101,8 @@ status)
 	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
     ;;
 delete)
-    IFS=$'\n' read -d '' -r -a lines <$HOME_DIR/conf/workers
-    for host in ${lines[@]}; do
+    IFS=',' read -ra array <<<$HADOOP_WORKERS
+    for host in ${array[@]}; do
         ssh $host rm -rf /opt/marmot
     done
     ;;
