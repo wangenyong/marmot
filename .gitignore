@@ -2,6 +2,5 @@ softwares/
 
 scripts/test.sh
 
-.rsync_exclude
-
-sync_to_hadoop.sh
+*.exclude
+sync_to*
