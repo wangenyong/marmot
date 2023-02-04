@@ -242,7 +242,9 @@ fi
 #################################
 # 配置 workers
 #################################
-cat $HOME_DIR/conf/workers >$HADOOP_HOME/etc/hadoop/workers
+for host in ${workers[@]}; do
+    echo $host >>$HADOOP_HOME/etc/hadoop/workers
+done
 
 # 格式化 NameNode
 if [ ! -d $HADOOP_HOME/data ]; then
