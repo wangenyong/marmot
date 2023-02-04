@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# MySQL version "5.7.16"
+#################################
+#
+# mysql version "5.7.16"
+#
+# 配置 mysql
+#
+#################################
 
 # 获取当前脚本所在目录和项目根目录
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -8,6 +14,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
+# 加载配置文件
+source $HOME_DIR/conf/config.conf
 
 log_info "========== 开始配置 MYSQL =========="
 
@@ -34,8 +42,6 @@ systemctl start mysqld
 
 init_passwd=$(grep 'temporary password' $LOG_MYSQL | awk '{print $NF}')
 
-PASSWD_ROOT="yee-ha7X"
-
-mysqladmin -uroot -p$init_passwd password $PASSWD_ROOT
+mysqladmin -uroot -p$init_passwd password $MYSQL_ROOT_PASS
 
 

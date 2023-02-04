@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# Spark version "3.0.0"
+#################################
+#
+# spark version "3.0.0"
+#
+# 配置 spark
+#
+#################################
 
 # 获取当前脚本所在目录和项目根目录
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -8,14 +14,18 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
+# 加载配置文件
+source $HOME_DIR/conf/config.conf
+
+IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 log_info "========== 开始配置 SPARK =========="
 
-# 判断 Spark 是否已经安装
+# 判断 spark 是否已经安装
 if [ -d /opt/marmot/spark-3.0.0-* ]; then
-    log_warn "Spark 已经安装!"
+    log_warn "spark 已经安装!"
 else
-    # 安装 Spark
+    # 安装 spark
     pv $HOME_DIR/softwares/spark-3.0.0-bin-hadoop3.2.tgz | tar -zx -C /opt/marmot/
 
     # 创建环境变量文件
@@ -24,7 +34,7 @@ else
         touch $MARMOT_PROFILE
     fi
 
-    # 配置 Spark 环境变量
+    # 配置 spark 环境变量
     if [ $(grep -c "SPARK_HOME" $MARMOT_PROFILE) -eq '0' ]; then
         cd /opt/marmot/spark-3.0.0-*
         SPARK_PATH="SPARK_HOME="$(pwd)
@@ -43,16 +53,16 @@ else
         log_warn "SPARK_HOME 环境变量已配置"
     fi
 
-    # 修改 Spark 项目权限为 marmot:marmot
+    # 修改 spark 项目权限为 marmot:marmot
     chown marmot:marmot -R $SPARK_HOME
 
     log_info "========== SPARK 配置完成 =========="
 
 fi
 
-#
+#################################
 # 修改 yarn-site.xml 配置文件
-#
+#################################
 PMEM_CHECK_CONFIG='
     <!--是否启动一个线程检查每个任务正使用的物理内存量，如果任务超出分配值，则直接将其杀掉，默认是 true -->\
     <property>\
@@ -77,9 +87,9 @@ else
     log_warn "Saprk yarn-site.xml 文件已配置！"
 fi
 
-#
+#################################
 # 修改 conf/spark-env.sh
-#
+#################################
 SPARK_ENV=$SPARK_HOME/conf/spark-env.sh
 
 if [ ! -f $SPARK_ENV ]; then
@@ -92,9 +102,9 @@ else
     log_warn "Saprk spark-env.xml 文件已配置！"
 fi
 
-#
+#################################
 # 配置 Spark 历史服务器
-#
+#################################
 SPARK_DEFAULTS=$SPARK_HOME/conf/spark-defaults.conf
 if [ ! -f $SPARK_DEFAULTS ]; then
     ssh marmot@hadoop101 "touch $SPARK_DEFAULTS"
@@ -105,14 +115,14 @@ if [ ! -f $SPARK_DEFAULTS ]; then
 
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
-    echo "spark.eventLog.dir hdfs://$(head -n 1 $HOME_DIR/conf/workers):8020/directory" >>$SPARK_DEFAULTS
-    echo "spark.yarn.historyServer.address=$(head -n 1 $HOME_DIR/conf/workers):18080" >>$SPARK_DEFAULTS
+    echo "spark.eventLog.dir hdfs://${workers[0]}:8020/directory" >>$SPARK_DEFAULTS
+    echo "spark.yarn.historyServer.address=${workers[0]}:18080" >>$SPARK_DEFAULTS
     echo "spark.history.ui.port=18080" >>$SPARK_DEFAULTS
 
     SPARK_HISTORY_OPTS='
 export SPARK_HISTORY_OPTS="\
 -Dspark.history.ui.port=18080\
--Dspark.history.fs.logDirectory=hdfs://'$(head -n 1 $HOME_DIR/conf/workers)':8020/directory\
+-Dspark.history.fs.logDirectory=hdfs://'${workers[0]}':8020/directory\
 -Dspark.history.retainedApplications=30"'
     sed -in '$a\'"$SPARK_HISTORY_OPTS" $SPARK_ENV
 
@@ -122,9 +132,9 @@ else
 fi
 
 
-#
+#################################
 # spark on hive 配置
-#
+#################################
 if [ ! -f "$SPARK_HOME/conf/hive-site.xml" ]; then
     log_info "配置 Spark on hive"
     cp $HIVE_HOME/conf/hive-site.xml $SPARK_HOME/conf/

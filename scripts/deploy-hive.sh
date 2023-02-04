@@ -1,6 +1,12 @@
 #!/bin/bash
 
+#################################
+#
 # hive version "3.1.2"
+#
+# 配置 hive
+#
+#################################
 
 # 获取当前脚本所在目录和项目根目录
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -8,14 +14,18 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
+# 加载配置文件
+source $HOME_DIR/conf/config.conf
+
+IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 log_info "========== 开始配置 HIVE =========="
 
-# 判断 Spark 是否已经安装
+# 判断 hive 是否已经安装
 if [ -d /opt/marmot/apache-hive-3.1.2-* ]; then
-    log_warn "Hive 已经安装!"
+    log_warn "hive 已经安装!"
 else
-    # 安装 Spark
+    # 安装 hive
     pv $HOME_DIR/softwares/apache-hive-3.1.2-bin.tar.gz | tar -zx -C /opt/marmot/
 
     # 创建环境变量文件
@@ -24,7 +34,7 @@ else
         touch $MARMOT_PROFILE
     fi
 
-    # 配置 Spark 环境变量
+    # 配置 hive 环境变量
     if [ $(grep -c "HIVE_HOME" $MARMOT_PROFILE) -eq '0' ]; then
         cd /opt/marmot/apache-hive-3.1.2-*
         HIVE_PATH="HIVE_HOME="$(pwd)
@@ -50,10 +60,9 @@ else
 fi
 
 
-#
+#################################
 # hive 元数据配置到 mysql
-#
-
+#################################
 HIVE_SITE_FILE=$HIVE_HOME/conf/hive-site.xml
 
 if [ ! -f $HIVE_SITE_FILE ]; then
@@ -70,7 +79,7 @@ if [ ! -f $HIVE_SITE_FILE ]; then
     MYSQL_URL_CONFIG='
     <property>\
         <name>javax.jdo.option.ConnectionURL</name>\
-        <value>jdbc:mysql://'$(head -n 1 $HOME_DIR/conf/workers)':3306/metastore?useSSL=false</value>\
+        <value>jdbc:mysql://'${workers[0]}':3306/metastore?useSSL=false</value>\
     </property>'
 
     MYSQL_DRIVER_NAME_CONFIG='
@@ -112,7 +121,7 @@ if [ ! -f $HIVE_SITE_FILE ]; then
     HIVE_THRIFT_HOST='
     <property>\
         <name>hive.server2.thrift.bind.host</name>\
-        <value>'$(head -n 1 $HOME_DIR/conf/workers)'</value>\
+        <value>'${workers[0]}'</value>\
     </property>'
 
     HIVE_API_AUTH='
@@ -137,7 +146,7 @@ if [ ! -f $HIVE_SITE_FILE ]; then
     <!-- 指定存储元数据要连接的地址 -->\
     <property>\
         <name>hive.metastore.uris</name>\
-        <value>thrift://'$(head -n 1 $HOME_DIR/conf/workers)':9083</value>\
+        <value>thrift://'${workers[0]}':9083</value>\
     </property>'
 
     sed -in '/<\/configuration>/i\'"$MYSQL_URL_CONFIG" $HIVE_SITE_FILE
@@ -155,14 +164,16 @@ if [ ! -f $HIVE_SITE_FILE ]; then
 
 fi
 
-# 判断元数据库是否存在
+#################################
+# 配置元数据
+#################################
 mysql -uroot -pyee-ha7X -e "use metastore"
 
 if [[ $? -ne 0 ]]; then
     log_info "创建元数据库 metastore"
     mysql -uroot -pyee-ha7X -e "create database metastore"
-    mysql -uroot -pyee-ha7X -e 'CREATE USER "marmot"@"%" IDENTIFIED BY "Phee]d1f"'
-    mysql -uroot -pyee-ha7X -e 'GRANT ALL ON metastore.* TO "marmot"@"%" IDENTIFIED BY "Phee]d1f"'
+    mysql -uroot -pyee-ha7X -e 'CREATE USER '$MYSQL_NORMAL_USER'@"%" IDENTIFIED BY '$MYSQL_NORMAL_PASS
+    mysql -uroot -pyee-ha7X -e 'GRANT ALL ON metastore.* TO '$MYSQL_NORMAL_USER'@"%" IDENTIFIED BY '$MYSQL_NORMAL_PASS
     mysql -uroot -pyee-ha7X -e 'flush privileges'
 
     schematool -initSchema -dbType mysql -verbose
