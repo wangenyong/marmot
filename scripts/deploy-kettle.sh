@@ -33,6 +33,8 @@ if [ -d $KETTLE_HOME ]; then
     log_warn "KETTLE 已经安装!"
 else
     unzip -o $HOME_DIR/softwares/pdi-ce-7.1.0.0-12.zip -d /opt/marmot/ | pv -l >/dev/null
+    # 拷贝 mysql 驱动
+    cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $KETTLE_HOME/lib/
 
     i=0
     for node in ${nodes[@]}; do
@@ -64,4 +66,31 @@ else
         fi
         let i+=1
     done
+
+    chown kettle:kettle -R $KETTLE_HOME
+
+    log_info "========== KETTLE 配置完成 =========="
+fi
+
+#################################
+# 配置 kettle database repository
+#################################
+mysql -uroot -p$MYSQL_ROOT_PASS -e "use kettle_repository"
+
+if [[ $? -ne 0 ]]; then
+    log_info "创建数据库 kettle_repository"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "create database kettle_repository"
+    
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON kettle_repository.* TO '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
+else
+    log_info "数据库 kettle_repository 已创建"
+fi
+
+KETTLE_LOG_DIR=$KETTLE_HOME/logs
+if [ ! -d $KETTLE_LOG_DIR ]; then
+log_info "创建 logs 文件夹"
+	mkdir -p $KETTLE_LOG_DIR
+    chown kettle:kettle -R $KETTLE_LOG_DIR
 fi
