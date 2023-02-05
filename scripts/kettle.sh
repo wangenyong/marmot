@@ -9,6 +9,8 @@ source $SCRIPT_DIR/log.sh
 # 加载配置文件
 source $HOME_DIR/conf/config.conf
 
+IFS=',' read -ra nodes <<<$KETTLE_NODES
+
 function check_process() {
     pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print$2}')
     ppid=$(netstat -nltp 2>/dev/null | grep $2 | awk '{print $7}' | cut -d '/' -f 1)
@@ -40,51 +42,32 @@ fi
 
 case "$1" in
 install)
-    # 配置 SSH 免密登录，关闭防火墙
+    # 配置 ssh 免密登录，关闭防火墙
     sh $SCRIPT_DIR/hadoop-ssh.sh kettle go
-    # 安装配置 JAVA SDK
+    # 安装配置 java sdk
     sh $SCRIPT_DIR/deploy-jdk.sh
-    # 安装 Mysql
+    # 安装 mysql
     sh $SCRIPT_DIR/deploy-mysql.sh
     # 安装配置 kettle
     sh $SCRIPT_DIR/deploy-kettle.sh
-    # 集群分发 Java 和 kettle
-    sh $SCRIPT_DIR/msync.sh /opt/marmot
+    # 集群分发 java 和 kettle
+    sh $SCRIPT_DIR/msync.sh $KETTLE_NODES /opt/marmot
     # 集群分发环境变量
-    sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
+    sh $SCRIPT_DIR/msync.sh $KETTLE_NODES /etc/profile.d/marmot_env.sh
     ;;
 start)
     log_info "========== 启动 kettle 集群 =========="
-    
 
-    log_info "---------- 启动 Hdfs ----------"
-    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
-    log_info "---------- 启动 Yarn ----------"
-    ssh marmot@hadoop102 "$HADOOP_HOME/sbin/start-yarn.sh"
-    log_info "---------- 启动 Hadoop Historyserver ----------"
-    ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon start historyserver"
-    log_info "---------- 启动 Hive ----------"
-    hive_start
+    KETTLE_HOME=/opt/marmot/data-integration
 
-    if [ -d "$SPARK_HOME" ]; then
-        log_info "---------- 启动 Spark Historyserver ----------"
-        ssh marmot@hadoop101 "$SPARK_HOME/sbin/start-history-server.sh"
-    fi
+    i=0
+    for node in ${nodes[@]}; do
+        ssh $KETTLE_USER@$node "nohup $KETTLE_HOME/carte.sh $node 808$i >$KETTLE_HOME/logs/kettle.log 2>&1 &"
+        let i+=1
+    done
     ;;
 stop)
-    log_info "========== 关闭 Hadoop 集群 =========="
-    if [ -d "$SPARK_HOME" ]; then
-        log_info "---------- 关闭 Spark Historyserver ----------"
-        ssh marmot@hadoop101 "$SPARK_HOME/sbin/stop-history-server.sh"
-    fi
-    log_info "---------- 关闭 Hive ----------"
-    hive_stop
-    log_info "---------- 关闭 Hadoop Historyserver ----------"
-    ssh marmot@hadoop101 "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
-    log_info "---------- 关闭 Yarn ----------"
-    ssh marmot@hadoop102 "$HADOOP_HOME/sbin/stop-yarn.sh"
-    log_info "---------- 关闭 Hdfs ----------"
-    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
+    log_info "========== 关闭 kettle 集群 =========="
     ;;
 status)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
@@ -97,8 +80,7 @@ status)
 	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
     ;;
 delete)
-    IFS=',' read -ra array <<<$HADOOP_WORKERS
-    for host in ${array[@]}; do
+    for host in ${nodes[@]}; do
         ssh $host rm -rf /opt/marmot
     done
     ;;

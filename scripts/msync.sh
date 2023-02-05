@@ -12,23 +12,21 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 
 # 加载日志打印脚本
 source $SCRIPT_DIR/log.sh
-# 加载配置文件
-source $HOME_DIR/conf/config.conf
 
 #1. 判断参数个数
-if [ $# -lt 1 ]; then
+if [ $# -lt 2 ]; then
     echo Not Enough Arguement!
     exit
 fi
 
-IFS=',' read -ra lines <<<$HADOOP_WORKERS
+IFS=',' read -ra lines <<<$1
 
 #2. 遍历集群所有机器
 for host in ${lines[@]}; do
-    echo ==================== $host $1 ====================
+    echo ==================== $host $2 ====================
     #3. 遍历所有目录，挨个发送
 
-    for file in $@; do
+    for file in $2; do
         #4. 判断文件是否存在
         if [ -e $file ]; then
             #5. 获取父目录

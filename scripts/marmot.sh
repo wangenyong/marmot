@@ -49,9 +49,9 @@ install)
     # 安装配置 hadoop
     sh $SCRIPT_DIR/deploy-hadoop.sh
     # 集群分发 java 和 hadoop
-    sh $SCRIPT_DIR/msync.sh /opt/marmot
+    sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS /opt/marmot
     # 集群分发环境变量
-    sh $SCRIPT_DIR/msync.sh /etc/profile.d/marmot_env.sh
+    sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
     # 安装 mysql
     sh $SCRIPT_DIR/deploy-mysql.sh
     # 安装配置 hive
