@@ -11,29 +11,6 @@ source $HOME_DIR/conf/config.conf
 
 IFS=',' read -ra nodes <<<$KETTLE_NODES
 
-function check_process() {
-    pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print$2}')
-    ppid=$(netstat -nltp 2>/dev/null | grep $2 | awk '{print $7}' | cut -d '/' -f 1)
-    echo $pid
-    [[ "$pid" =~ "$ppid" ]] && [ "$ppid" ] && return 0 || return 1
-}
-
-function hive_start() {
-    metapid=$(check_process HiveMetastore 9083)
-    cmd="ssh marmot@hadoop101 nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
-    [ -z "$metapid" ] && eval $cmd || echo "Metastroe 服务已启动"
-    server2pid=$(check_process HiveServer2 10000)
-    cmd="ssh marmot@hadoop101 nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
-    [ -z "$server2pid" ] && eval $cmd || echo "HiveServer2 服务已启动"
-}
-
-function hive_stop() {
-    metapid=$(check_process HiveMetastore 9083)
-    [ "$metapid" ] && kill $metapid || echo "Metastore 服务未启动"
-    server2pid=$(check_process HiveServer2 10000)
-    [ "$server2pid" ] && kill $server2pid || echo "HiveServer2 服务未启动"
-}
-
 #1. 判断参数个数
 if [ $# -lt 1 ]; then
     log_warn 请输入命令参数!
@@ -68,16 +45,23 @@ start)
     ;;
 stop)
     log_info "========== 关闭 kettle 集群 =========="
+    
+    i=0
+    for host in ${nodes[@]}; do
+        echo =============== $host ===============
+        cmd="fuser -k 808$i/tcp"
+        ssh $host $cmd
+        let i+=1
+    done
     ;;
 status)
-    IFS=',' read -ra array <<<$HADOOP_WORKERS
-    for host in ${array[@]}; do
+    i=0
+    for host in ${nodes[@]}; do
         echo =============== $host ===============
-        ssh $host jps
+        cmd="netstat -nlp | grep 808$i"
+        ssh $host $cmd
+        let i+=1
     done
-    # 查看 Hive 运行状态
-    check_process HiveMetastore 9083 >/dev/null && echo "Metastore 服务运行正常" || echo "Metastore 服务运行异常"
-	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
     ;;
 delete)
     for host in ${nodes[@]}; do
