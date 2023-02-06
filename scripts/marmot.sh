@@ -106,7 +106,8 @@ status)
 delete)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
     for host in ${array[@]}; do
-        ssh $host rm -rf /opt/marmot
+        echo =============== $host ===============
+        ssh $host rm -rfv /opt/marmot
     done
     ;;
 *)

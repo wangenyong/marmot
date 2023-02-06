@@ -102,16 +102,17 @@ else
     log_warn "Saprk spark-env.xml 文件已配置！"
 fi
 
+# 启动 HDFS 
+ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+
 #################################
 # 配置 Spark 历史服务器
 #################################
 SPARK_DEFAULTS=$SPARK_HOME/conf/spark-defaults.conf
 if [ ! -f $SPARK_DEFAULTS ]; then
     ssh marmot@hadoop101 "touch $SPARK_DEFAULTS"
-    # 启动 HDFS 创建 directory 目录
-    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/start-dfs.sh"
+    # 创建 directory 目录
     ssh marmot@hadoop101 "hadoop fs -mkdir /directory"
-    ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
 
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
@@ -145,4 +146,55 @@ if [ ! -f "$SPARK_HOME/conf/hive-site.xml" ]; then
     chown marmot:marmot -R $SPARK_HOME
 fi
 
+#################################
+# hive on spark 配置
+#################################
+HIVE_SPARK_DEFAULT=$HIVE_HOME/conf/spark-defaults.conf
+if [ ! -f $HIVE_SPARK_DEFAULT ]; then  
+    ssh marmot@hadoop101 "touch $HIVE_SPARK_DEFAULT"
 
+    echo '#***** CUSTOM CONFIG *****' >>$HIVE_SPARK_DEFAULT
+    echo "spark.master yarn" >>$HIVE_SPARK_DEFAULT
+    echo "spark.eventLog.enabled true" >>$HIVE_SPARK_DEFAULT
+    echo "spark.eventLog.dir hdfs://${workers[0]}:8020/directory" >>$HIVE_SPARK_DEFAULT
+    echo "spark.executor.memory 1g" >>$HIVE_SPARK_DEFAULT
+    echo "spark.driver.memory 1g" >>$HIVE_SPARK_DEFAULT
+
+    # 向 hdfs 上传 spark 纯净版 jar 包
+    pv $HOME_DIR/softwares/spark-3.0.0-bin-without-hadoop.tgz | tar -zx -C /home/marmot/
+    chown marmot:marmot -R /home/marmot/
+    ssh marmot@hadoop101 "hadoop fs -mkdir /spark-jars"
+    ssh marmot@hadoop101 "hadoop fs -put ~/spark-3.0.0-bin-without-hadoop/jars/* /spark-jars"
+
+    SPARK_YAR_JARS='
+    <!--Spark依赖位置-->\
+    <property>\
+        <name>spark.yarn.jars</name>\
+        <value>hdfs://'${workers[0]}':8020/spark-jars/*</value>\
+    </property>'
+    HIVE_ENGINE='
+    <!--Hive执行引擎-->\
+    <property>\
+        <name>hive.execution.engine</name>\
+        <value>spark</value>\
+    </property>'
+    HIVE_SPARK_TIMEOUT='
+    <!--Hive和Spark连接超时时间-->\
+    <property>\
+        <name>hive.spark.client.connect.timeout</name>\
+        <value>10000ms</value>\
+    </property>'
+
+    HIVE_SITE_FILE=$HIVE_HOME/conf/hive-site.xml
+
+    sed -in '/<\/configuration>/i\'"$SPARK_YAR_JARS" $HIVE_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$HIVE_ENGINE" $HIVE_SITE_FILE
+    sed -in '/<\/configuration>/i\'"$HIVE_SPARK_TIMEOUT" $HIVE_SITE_FILE
+
+    log_info "hive on spark 配置完成！"
+else
+    log_warn "hive on spark 已配置！"
+fi
+
+# 停止 HDFS
+ssh marmot@hadoop101 "$HADOOP_HOME/sbin/stop-dfs.sh"
