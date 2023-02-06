@@ -35,6 +35,9 @@ else
     unzip -o $HOME_DIR/softwares/pdi-ce-7.1.0.0-12.zip -d /opt/marmot/ | pv -l >/dev/null
     # 拷贝 mysql 驱动
     cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $KETTLE_HOME/lib/
+    # 修改插件配置文件
+    PLUGIN_PROPERTIES=$KETTLE_HOME/plugins/pentaho-big-data-plugin/plugin.properties
+    sed -i '/active.hadoop.configuration=/s/active.hadoop.configuration=/active.hadoop.configuration=hdp25/' $PLUGIN_PROPERTIES
 
     i=0
     for node in ${nodes[@]}; do
@@ -79,7 +82,7 @@ mysql -uroot -p$MYSQL_ROOT_PASS -e "use kettle_repository"
 
 if [[ $? -ne 0 ]]; then
     log_info "创建数据库 kettle_repository"
-    mysql -uroot -p$MYSQL_ROOT_PASS -e "create database kettle_repository"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "create DATABASE kettle_repository DEFAULT CHARSET utf8 COLLATE utf8_general_ci"
     
     mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
     mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON kettle_repository.* TO '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"

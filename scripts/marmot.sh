@@ -99,6 +99,7 @@ status)
         ssh $host jps
     done
     # 查看 hive 运行状态
+    echo =============== hive service status ===============
     check_process HiveMetastore 9083 >/dev/null && echo "Metastore 服务运行正常" || echo "Metastore 服务运行异常"
 	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
     ;;
