@@ -171,7 +171,7 @@ mysql -uroot -p$MYSQL_ROOT_PASS -e "use metastore"
 
 if [[ $? -ne 0 ]]; then
     log_info "创建元数据库 metastore"
-    mysql -uroot -p$MYSQL_ROOT_PASS -e "create database metastore"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE metastore DEFAULT CHARSET utf8 COLLATE utf8_general_ci"
     
     mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
     mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON metastore.* TO '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
