@@ -2,5 +2,7 @@ softwares/
 
 scripts/test.sh
 
+tips.md
+
 *.exclude
 sync_to*
