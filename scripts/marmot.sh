@@ -10,7 +10,7 @@ source $SCRIPT_DIR/log.sh
 source $HOME_DIR/conf/config.conf
 
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
-IFS=',' read -ra azkaban_nodes <<<$HADOOP_NODES
+IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
 
 function check_process() {
     pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print$2}')
@@ -84,12 +84,13 @@ start)
 		ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; curl -G \"$host:\$(<./executor.port)/executor?action=activate\" && echo "
     done
     echo =============== start azkaban-web ===============
-    ssh $HADOOP_USER${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
+    ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
     ;;
 stop)
+    source /etc/profile
     log_info "---------- 关闭 azkaban ----------"
     echo =============== stop azkaban-web ===============
-    ssh $HADOOP_USER${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
+    ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
     for host in ${azkaban_nodes[@]}; do
         echo =============== $host stop azkaban-exec ===============
         ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/shutdown-exec.sh"

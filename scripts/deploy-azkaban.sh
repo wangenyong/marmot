@@ -17,6 +17,8 @@ source $SCRIPT_DIR/log.sh
 # 加载配置文件
 source $HOME_DIR/conf/config.conf
 
+IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
+
 log_info "========== 开始配置 AZKABAN =========="
 
 AZKABAN_HOME=/opt/marmot/azkaban
@@ -83,8 +85,8 @@ fi
 EXECUTOER_CONF_FILE=$AZKABAN_HOME/azkaban-exec/conf/azkaban.properties
 if [ $(grep -c "America/Los_Angeles" $EXECUTOER_CONF_FILE) -ne '0' ]; then
     sed -i -r '/^default\.timezone\.id/s/.*/default\.timezone\.id=Asia\/Shanghai/' $EXECUTOER_CONF_FILE
-    sed -i -r '/^azkaban\.webserver\.url/s/.*/azkaban.webserver\.url=http:\/\/'${workers[0]}':8081/' $EXECUTOER_CONF_FILE
-    sed -i -r '/^mysql\.host/s/.*/mysql\.host='${workers[0]}'/' $EXECUTOER_CONF_FILE
+    sed -i -r '/^azkaban\.webserver\.url/s/.*/azkaban.webserver\.url=http:\/\/'${azkaban_nodes[0]}':8081/' $EXECUTOER_CONF_FILE
+    sed -i -r '/^mysql\.host/s/.*/mysql\.host='${azkaban_nodes[0]}'/' $EXECUTOER_CONF_FILE
     sed -i -r '/^mysql\.password/s/.*/mysql\.password='$MYSQL_AZKABAN_PASS'/' $EXECUTOER_CONF_FILE
     echo "executor.port=12321" >>$EXECUTOER_CONF_FILE
 fi
@@ -96,7 +98,7 @@ WEB_CONF_FILE=$AZKABAN_HOME/azkaban-web/conf/azkaban.properties
 if [ $(grep -c "America/Los_Angeles" $WEB_CONF_FILE) -ne '0' ]; then
     sed -i -r '/^default\.timezone\.id/s/.*/default\.timezone\.id=Asia\/Shanghai/' $WEB_CONF_FILE
     sed -i -r '/^azkaban\.executorselector\.filters/s/.*/azkaban\.executorselector\.filters=StaticRemainingFlowSize,CpuStatus/' $WEB_CONF_FILE
-    sed -i -r '/^mysql\.host/s/.*/mysql\.host='${workers[0]}'/' $WEB_CONF_FILE
+    sed -i -r '/^mysql\.host/s/.*/mysql\.host='${azkaban_nodes[0]}'/' $WEB_CONF_FILE
     sed -i -r '/^mysql\.password/s/.*/mysql\.password='$MYSQL_AZKABAN_PASS'/' $WEB_CONF_FILE
 fi
 
