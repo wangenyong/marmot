@@ -86,20 +86,10 @@ start)
     done
     echo =============== start azkaban-web ===============
     ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
-    log_info "---------- 启动 zookeeper ----------"
-    for host in ${zookeeper_nodes[@]}; do
-        echo =============== zookeeper $i 启动 ===============
-        ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh start"
-    done
     ;;
 stop)
     source /etc/profile
     log_info "========== 关闭 hadoop 集群 =========="
-    log_info "---------- 关闭 zookeeper ----------"
-    for host in ${zookeeper_nodes[@]}; do
-        echo =============== zookeeper $i 停止 ===============
-        ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh stop"
-    done
     log_info "---------- 关闭 azkaban ----------"
     echo =============== stop azkaban-web ===============
     ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
@@ -130,11 +120,6 @@ status)
     echo =============== hive service status ===============
     check_process HiveMetastore 9083 >/dev/null && echo "Metastore 服务运行正常" || echo "Metastore 服务运行异常"
 	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
-    echo =============== zookeeper service status ===============
-    for host in ${zookeeper_nodes[@]}; do
-        echo =============== zookeeper $i 状态 ===============
-        ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh status"
-    done
     ;;
 delete)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
