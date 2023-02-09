@@ -9,6 +9,8 @@ source $SCRIPT_DIR/log.sh
 # 加载配置文件
 source $HOME_DIR/conf/config.conf
 
+source /etc/profile
+
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 
 case $1 in

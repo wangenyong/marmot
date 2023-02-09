@@ -77,26 +77,10 @@ start)
         log_info "---------- 启动 spark historyserver ----------"
         ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/start-history-server.sh"
     fi
-    log_info "---------- 启动 azkaban ----------"
-    for host in ${azkaban_nodes[@]}; do
-        echo =============== $host start azkaban-exec ===============
-        ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/start-exec.sh"
-        sleep 5s
-		ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; curl -G \"$host:\$(<./executor.port)/executor?action=activate\" && echo "
-    done
-    echo =============== start azkaban-web ===============
-    ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
     ;;
 stop)
     source /etc/profile
     log_info "========== 关闭 hadoop 集群 =========="
-    log_info "---------- 关闭 azkaban ----------"
-    echo =============== stop azkaban-web ===============
-    ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
-    for host in ${azkaban_nodes[@]}; do
-        echo =============== $host stop azkaban-exec ===============
-        ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/shutdown-exec.sh"
-    done
     if [ -d "$SPARK_HOME" ]; then
         log_info "---------- 关闭 spark historyserver ----------"
         ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/stop-history-server.sh"
@@ -119,7 +103,7 @@ status)
     # 查看 hive 运行状态
     echo =============== hive service status ===============
     check_process HiveMetastore 9083 >/dev/null && echo "Metastore 服务运行正常" || echo "Metastore 服务运行异常"
-	check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
+    check_process HiveServer2 10000 >/dev/null && echo "HiveServer2 服务运行正常" || echo "HiveServer2 服务运行异常"
     ;;
 delete)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
