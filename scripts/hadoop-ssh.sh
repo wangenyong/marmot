@@ -139,7 +139,6 @@ function print_info() {
 case "$2" in
 go)
     host_list_print
-    close_firewall
     system_conf
     add_user
     ssh_auth

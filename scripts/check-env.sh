@@ -23,7 +23,7 @@ fi
 #################################
 # check necessary softwares
 #################################
-printf -- "Install necessary softwares.\n"
+printf -- "${}Install necessary softwares.\n"
 # package sshpass
 sshpass=$(rpm -qa | grep "^sshpass.*")
 if [ $? -eq 0 ]; then
@@ -80,3 +80,41 @@ else
         exit 1
     fi
 fi
+
+#################################
+# select cluster constant, hadoop or kettle
+#################################
+if [[ $1 == "kettle" ]]; then
+    IFS=',' read -ra nodes <<<$KETTLE_NODES
+    NORMAL_USER=$KETTLE_USER
+    NORMAL_PASS=$KETTLE_PASS
+else
+    IFS=',' read -ra nodes <<<$HADOOP_WORKERS
+    NORMAL_USER=$HADOOP_USER
+    NORMAL_PASS=$HADOOP_PASS
+fi
+
+HOST_LIST=${nodes[@]}
+LOCAL_HOST=$(hostname)
+#################################
+# close firewall
+#################################
+printf "Close firewall\n"
+cmd_stop_firewall="systemctl stop firewalld.service"
+cmd_disable_firewall="systemctl disable firewalld.service"
+cmd_firewall_state="firewall-cmd --state"
+# stop cluster firewall
+for host in $HOST_LIST; do
+    printf "Close $host firewall\n"
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_stop_firewall
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_disable_firewall
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
+done
+
+#################################
+# config ssh auto login without password
+#################################
+printf "host node list:\n"
+for host in $HOST_LIST; do
+    printf "$host\n"
+done
