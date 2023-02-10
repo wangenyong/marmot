@@ -29,7 +29,6 @@ fi
 printf -- "\n"
 printf -- "${INFO}>>> Install java sdk.${END}\n"
 
-# 安装 java sdk
 pv $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz | tar -zx -C $PROJECT_DIR/
 
 #############################################################################################
