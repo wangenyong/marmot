@@ -88,20 +88,7 @@ function ssh_auth() {
     done
 }
 
-#
-# 关闭集群节点防火墙
-#
-function close_firewall() {
-    log_info ">>> Close firewall"
-    cmd_stop_firewall="systemctl stop firewalld.service"
-    cmd_disable_firewall="systemctl disable firewalld.service"
-    cmd_firewall_state="firewall-cmd --state"
-    for host in $HOST_LIST; do
-        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_stop_firewall
-        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_disable_firewall
-        sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
-    done
-}
+
 
 function ssh_subtest() {
     for host in $HOST_LIST; do
