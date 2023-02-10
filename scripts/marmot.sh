@@ -109,7 +109,7 @@ delete)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
     for host in ${array[@]}; do
         echo =============== $host ===============
-        ssh $host rm -rfv /opt/marmot
+        ssh $host "rm -rfv /opt/marmot; rm -fv /etc/profile.d/marmot_env.sh"
     done
     ;;
 *)
