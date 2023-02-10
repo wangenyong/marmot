@@ -108,17 +108,29 @@ cmd_disable_firewall="systemctl disable firewalld.service"
 cmd_firewall_state="firewall-cmd --state"
 # stop cluster firewall
 for host in $HOST_LIST; do
-    printf -- "Closing $host firewall\n"
+    printf -- "${INFO}----- $host -----${END}\n"
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_stop_firewall
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_disable_firewall
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
 done
 
 #################################
-# config ssh auto login without password
+# list all cluster host info
 #################################
 printf -- "\n"
-printf -- ">>> ${INFO}All cluster host list:${END}\n"
+printf -- "${INFO}>>> All cluster host list:${END}\n"
 for host in $HOST_LIST; do
-    printf -- "$host\n"
+    printf -- "${SUCCESS}----- $host -----${END}\n"
 done
+
+#################################
+# create host user
+#################################
+printf -- "\n"
+printf -- "${INFO}>>> Create host user.${END}\n"
+cmd="useradd $NORMAL_USER; echo '$NORMAL_PASS' | passwd $NORMAL_USER --stdin"
+for host in $HOST_LIST; do
+    printf -- "${INFO}----- $host -----${END}\n"
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd
+done
+
