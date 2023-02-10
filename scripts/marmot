@@ -11,12 +11,14 @@ printf -- '\n'
 
 # loading config file
 source $HOME_DIR/conf/config.conf
+# loading printf file
+source $HOME_DIR/conf/printf.conf
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
     if [ ! -d "$PROJECT_DIR" ]; then
         printf -- "The project have not been installed.\n"
-        printf -- "You can install it by command: \033[1m\033[34mmarmot install { hadoop | kettle | kafka }\033[0m\n"
+        printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
         printf -- '\n'
     fi
     exit 0
@@ -26,13 +28,13 @@ case "$1" in
 install)
     case "$2" in
     "hadoop")
-        printf -- "hadoop\n"
+        exec $SCRIPT_DIR/check-env.sh
         ;;
     "kettle")
         printf -- "kettle\n"
         ;;
     *)
-        printf -- "\033[1mUSAGE: \033[34mmarmot install { hadoop | kettle | kafka }\033[0m\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
