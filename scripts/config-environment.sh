@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#################################
+#############################################################################################
 #
 # check the operating system environment
 # check software dependencies
 #
-#################################
+#############################################################################################
 
 # get script directory and home directory
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -22,9 +22,9 @@ if [ $ENVIRONMENT_STATUS -eq 0 ]; then
     exit 0
 fi
 
-#################################
+#############################################################################################
 # check software dependencies
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Install software dependencies.${END}\n"
 # package sshpass
@@ -84,9 +84,9 @@ else
     fi
 fi
 
-#################################
+#############################################################################################
 # select a deployment cluster
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> select cluster by argument.${END}\n"
 # judge the first argument
@@ -105,18 +105,18 @@ fi
 HOST_LIST=${nodes[@]}
 LOCAL_HOST=$(hostname)
 
-#################################
+#############################################################################################
 # list all cluster nodes
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> All cluster nodes list:${END}\n"
 for host in $HOST_LIST; do
     printf -- "${SUCCESS}----- $host -----${END}\n"
 done
 
-#################################
+#############################################################################################
 # cluster installation software dependencies 
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Install rsync on all cluster.${END}\n"
 for host in $HOST_LIST; do
@@ -125,9 +125,9 @@ for host in $HOST_LIST; do
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host "rpm -ivh rsync-3.1.2-10.el7.x86_64.rpm"
 done
 
-#################################
+#############################################################################################
 # turn off firewall
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Disable all cluster node firewalls.${END}\n"
 cmd_stop_firewall="systemctl stop firewalld.service"
@@ -141,9 +141,9 @@ for host in $HOST_LIST; do
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
 done
 
-#################################
+#############################################################################################
 # create a cluster node operation user
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Create operation user.${END}\n"
 cmd="useradd $NORMAL_USER; echo '$NORMAL_PASS' | passwd $NORMAL_USER --stdin"
@@ -152,9 +152,9 @@ for host in $HOST_LIST; do
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd
 done
 
-#################################
+#############################################################################################
 # distributing ssh configuration
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Distributing ssh configuration.${END}\n"
 # ssh configuration file
@@ -174,9 +174,9 @@ for host in $HOST_LIST; do
     sshpass -p $ADMIN_PASS scp $SSH_CONF $ADMIN_USER@$host:$SSH_CONF
 done
 
-#################################
+#############################################################################################
 # ssh password-free configuration
-#################################
+#############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Ssh password-free configuration.${END}\n"
 
