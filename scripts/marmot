@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# get script current dir and project home dir
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+HOME_DIR="$(dirname $SCRIPT_DIR)"
+
+# print logo
+cat $HOME_DIR/conf/welcome.figlet
+printf -- '\n'
+printf -- '\n'
+
+# loading config file
+source $HOME_DIR/conf/config.conf
+
+# no arguments
+if [ ${#@} -eq 0 ]; then
+    if [ ! -d "$PROJECT_DIR" ]; then
+        printf -- "The project have not been installed.\n"
+        printf -- "You can install it by command: \033[1m\033[34mmarmot install { hadoop | kettle | kafka }\033[0m\n"
+        printf -- '\n'
+    fi
+    exit 0
+fi
+
+case "$1" in
+install)
+    case "$2" in
+    "hadoop")
+        printf -- "hadoop\n"
+        ;;
+    "kettle")
+        printf -- "kettle\n"
+        ;;
+    *)
+        printf -- "\033[1mUSAGE: \033[34mmarmot install { hadoop | kettle | kafka }\033[0m\n"
+        printf -- '\n'
+        ;;
+    esac
+
+    ;;
+2 | 3)
+    echo "item = 2 or item = 3"
+    ;;
+*)
+    echo "default (none of above)"
+    ;;
+esac
