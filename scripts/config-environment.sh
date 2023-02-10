@@ -15,9 +15,10 @@ source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
 
-printf -- "${INFO}>>> Check operation environment. ${END}\n"
+printf -- "${INFO}========== CHECK THE OPERATING SYSTEM ENVIRONMENT ==========${END}\n"
 if [ $ENVIRONMENT_STATUS -eq 0 ]; then
-    printf -- "${SUCCESS}Operation has been config completed.${END}\n"
+    printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION IS COMPLETE ==========${END}\n"
+    printf -- "\n"
     exit 0
 fi
 
@@ -114,6 +115,17 @@ for host in $HOST_LIST; do
 done
 
 #################################
+# cluster installation software dependencies 
+#################################
+printf -- "\n"
+printf -- "${INFO}>>> Install rsync on all cluster.${END}\n"
+for host in $HOST_LIST; do
+    printf -- "${INFO}----- $host -----${END}\n"
+    sshpass -p $ADMIN_PASS scp $HOME_DIR/softwares/packages/rsync-3.1.2-10.el7.x86_64.rpm $ADMIN_USER@$host:~/
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host "rpm -ivh rsync-3.1.2-10.el7.x86_64.rpm"
+done
+
+#################################
 # turn off firewall
 #################################
 printf -- "\n"
@@ -193,4 +205,8 @@ for host in $HOST_LIST; do
     sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_chmod
 done
 printf -- "${SUCCESS}All public keys copied to cluster.${END}\n"
+printf -- "\n"
+
+sed -i -r '/^ENVIRONMENT_STATUS/s/.*/ENVIRONMENT_STATUS=0/' $HOME_DIR/conf/config.conf
+printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION SUCCESSFULL ==========${END}\n"
 printf -- "\n"
