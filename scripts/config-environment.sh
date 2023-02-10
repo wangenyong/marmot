@@ -3,6 +3,7 @@
 #############################################################################################
 #
 # check the operating system environment
+#
 # check software dependencies
 #
 #############################################################################################
@@ -20,6 +21,15 @@ if [ $ENVIRONMENT_STATUS -eq 0 ]; then
     printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION IS COMPLETE ==========${END}\n"
     printf -- "\n"
     exit 0
+fi
+
+# create project directory
+if [ ! -d $PROJECT_DIR ]; then
+    mkdir $PROJECT_DIR
+fi
+# create environment variables file
+if [ ! -f $MARMOT_PROFILE ]; then
+    touch $MARMOT_PROFILE
 fi
 
 #############################################################################################
@@ -115,7 +125,7 @@ for host in $HOST_LIST; do
 done
 
 #############################################################################################
-# cluster installation software dependencies 
+# cluster installation software dependencies
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Install rsync on all cluster.${END}\n"

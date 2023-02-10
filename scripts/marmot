@@ -28,7 +28,8 @@ case "$1" in
 install)
     case "$2" in
     "hadoop")
-        exec $SCRIPT_DIR/config-environment.sh
+        sh $SCRIPT_DIR/config-environment.sh
+        sh $SCRIPT_DIR/deploy-jdk.sh
         ;;
     "kettle")
         printf -- "kettle\n"
