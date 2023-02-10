@@ -23,7 +23,8 @@ fi
 #################################
 # check necessary softwares
 #################################
-printf -- "${}Install necessary softwares.\n"
+printf -- "\n"
+printf -- "${INFO}>>> Install necessary softwares.${END}\n"
 # package sshpass
 sshpass=$(rpm -qa | grep "^sshpass.*")
 if [ $? -eq 0 ]; then
@@ -96,16 +97,18 @@ fi
 
 HOST_LIST=${nodes[@]}
 LOCAL_HOST=$(hostname)
+
 #################################
 # close firewall
 #################################
-printf "Close firewall\n"
+printf -- "\n"
+printf -- "${INFO}>>> Closing cluster host firewall.${END}\n"
 cmd_stop_firewall="systemctl stop firewalld.service"
 cmd_disable_firewall="systemctl disable firewalld.service"
 cmd_firewall_state="firewall-cmd --state"
 # stop cluster firewall
 for host in $HOST_LIST; do
-    printf "Close $host firewall\n"
+    printf -- "Closing $host firewall\n"
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_stop_firewall
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_disable_firewall
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd_firewall_state
@@ -114,7 +117,8 @@ done
 #################################
 # config ssh auto login without password
 #################################
-printf "host node list:\n"
+printf -- "\n"
+printf -- ">>> ${INFO}All cluster host list:${END}\n"
 for host in $HOST_LIST; do
-    printf "$host\n"
+    printf -- "$host\n"
 done

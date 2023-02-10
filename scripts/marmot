@@ -28,7 +28,7 @@ case "$1" in
 install)
     case "$2" in
     "hadoop")
-        exec $SCRIPT_DIR/check-env.sh
+        exec $SCRIPT_DIR/config-environment.sh
         ;;
     "kettle")
         printf -- "kettle\n"
