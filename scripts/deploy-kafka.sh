@@ -59,8 +59,6 @@ fi
 #################################
 source /etc/profile
 
-
-
 if [ ! -d "$KAFKA_HOME/logs" ]; then
     mkdir -p $KAFKA_HOME/logs
 
