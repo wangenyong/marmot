@@ -257,17 +257,18 @@ done
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Distributing hadoop to all cluster nodes.${END}\n"
-
-chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR
-
+# modify permissions
+chown $HADOOP_USER:$HADOOP_USER -R $HADOOP_HOME
+# distributing hadoop
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS $HADOOP_HOME
+printf -- "\n"
 # distributing environment variables
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 
 #############################################################################################
 # format namenode
 #############################################################################################
-#if [ ! -d $HADOOP_HOME/data ]; then
-#    log_info "格式化 NameNode"
-#    ssh marmot@hadoop101 "hdfs namenode -format"
-#fi
+if [ ! -d $HADOOP_HOME/data ]; then
+    printf -- "${INFO}>>> Format namenode.${END}\n"
+    ssh $HADOOP_USER@${workers[0]} "hdfs namenode -format"
+fi

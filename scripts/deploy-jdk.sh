@@ -57,9 +57,11 @@ fi
 printf -- "\n"
 printf -- "${INFO}>>> Distributing jdk to all cluster nodes.${END}\n"
 
-chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR
-
+# modify permissions
+chown $HADOOP_USER:$HADOOP_USER -R $JAVA_HOME
+# distributing jdk
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS $JAVA_HOME
+printf -- "\n"
 # distributing environment variables
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 

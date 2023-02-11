@@ -42,8 +42,12 @@ install)
     esac
 
     ;;
-2 | 3)
-    echo "item = 2 or item = 3"
+remove)
+    IFS=',' read -ra array <<<$HADOOP_WORKERS
+    for host in ${array[@]}; do
+        echo =============== $host ===============
+        ssh $host "rm -rf /opt/marmot; rm -f /etc/profile.d/marmot_env.sh"
+    done
     ;;
 *)
     echo "default (none of above)"
