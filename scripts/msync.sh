@@ -6,14 +6,14 @@
 #
 #################################
 
-# 获取当前脚本所在目录和项目根目录
+# get script directory and home directory
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 HOME_DIR="$(dirname $SCRIPT_DIR)"
+# loading config file
+source $HOME_DIR/conf/config.conf
+# loading printf file
+source $HOME_DIR/conf/printf.conf
 
-# 加载日志打印脚本
-source $SCRIPT_DIR/log.sh
-
-#1. 判断参数个数
 if [ $# -lt 2 ]; then
     echo Not Enough Arguement!
     exit

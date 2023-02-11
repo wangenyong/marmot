@@ -4,74 +4,67 @@
 #
 # hadoop version "3.1.3"
 #
-# 配置 hadoop
+# install and configuer hadoop
 #
 #################################
 
-# 获取当前脚本所在目录和项目根目录
+# get script directory and home directory
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 HOME_DIR="$(dirname $SCRIPT_DIR)"
-
-# 加载日志打印脚本
-source $SCRIPT_DIR/log.sh
-
-log_info "========== 开始配置 HADOOP =========="
-
-# 判断大数据项目根目录是否已经创建
-if [ ! -d /opt/marmot ]; then
-    mkdir /opt/marmot
-    log_info "创建 marmot 项目目录完成!"
-fi
-
-# 判断 hadoop 是否已经安装
-if [ -d /opt/marmot/hadoop-* ]; then
-    log_warn "Hadoop 已经安装!"
-else
-    # 安装 hadoop
-    pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C /opt/marmot/
-
-    # 创建环境变量文件
-    MARMOT_PROFILE="/etc/profile.d/marmot_env.sh"
-    if [ ! -f $MARMOT_PROFILE ]; then
-        touch $MARMOT_PROFILE
-    fi
-
-    # 配置 hadoop 环境变量
-    if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-        cd /opt/marmot/hadoop-*
-        HADOOP_PATH="HADOOP_HOME="$(pwd)
-        cd -
-
-        echo -e >>$MARMOT_PROFILE
-        echo '#***** HADOOP_HOME *****' >>$MARMOT_PROFILE
-        echo "export "$HADOOP_PATH >>$MARMOT_PROFILE
-        echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
-        echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
-
-        source /etc/profile
-
-        log_info "HADOOP_HOME 环境变量设置完成: "$HADOOP_HOME
-    else
-        log_warn "HADOOP_HOME 环境变量已配置"
-    fi
-
-    # 修改项目权限
-    chown marmot:marmot -R $HADOOP_HOME
-
-    log_info "========== HADOOP 配置完成 =========="
-
-fi
-
-# 刷新环境变量
-source /etc/profile
-# 加载配置文件
+# loading config file
 source $HOME_DIR/conf/config.conf
-
+# loading printf file
+source $HOME_DIR/conf/printf.conf
+# loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
-#################################
-# 配置 core-site.xml 文件
-#################################
+printf -- "${INFO}========== INSTALL HADOOP ==========${END}\n"
+if [ -d $PROJECT_DIR/hadoop* ]; then
+    printf -- "${SUCCESS}========== HADOOP INSTALLED ==========${END}\n"
+    printf -- "\n"
+    exit 0
+fi
+
+#############################################################################################
+# install hadoop
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Install hadoop.${END}\n"
+
+pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C $PROJECT_DIR/
+
+#############################################################################################
+# configure environment variables
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop environment variables.${END}\n"
+
+if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
+    cd $PROJECT_DIR/hadoop*
+    HADOOP_PATH="HADOOP_HOME="$(pwd)
+    cd - >/dev/null 2>&1
+
+    echo -e >>$MARMOT_PROFILE
+    echo '#***** HADOOP_HOME *****' >>$MARMOT_PROFILE
+    echo "export "$HADOOP_PATH >>$MARMOT_PROFILE
+    echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
+    echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
+
+    source /etc/profile
+    printf -- "${SUCCESS}HADOOP_HOME configure successful: $HADOOP_HOME${END}\n"
+    printf -- "\n"
+else
+    source /etc/profile
+    printf -- "${WARN}HADOOP_HOME configurtion is complete.${END}\n"
+    printf -- "\n"
+fi
+
+#############################################################################################
+# configure core-site.xml
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop core-site.xml.${END}\n"
+
 NAME_NODE_CONFIG='
     <!-- 指定 NameNode 的地址 -->\
     <property>\
@@ -106,21 +99,26 @@ USER_MARMOT_GROUPS='
     </property>'
 
 CORE_SITE_FILE=$HADOOP_HOME/etc/hadoop/core-site.xml
-# 判断 core-site.xml 文件是否已经配置
+# determine whether the file core-site.xml is configured
 if [ $(grep -c "fs.defaultFS" $CORE_SITE_FILE) -eq '0' ]; then
-    sed -in '/<\/configuration>/i\'"$NAME_NODE_CONFIG" $CORE_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$DATA_DIR_CONFIG" $CORE_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$HDFS_USER_CONFIG" $CORE_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$USER_MARMOT_HOSTS" $CORE_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$USER_MARMOT_GROUPS" $CORE_SITE_FILE
-    log_info "core-site.xml 文件配置完成！"
+    sed -i -r '/<\/configuration>/i\'"$NAME_NODE_CONFIG" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$DATA_DIR_CONFIG" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$HDFS_USER_CONFIG" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_HOSTS" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_GROUPS" $CORE_SITE_FILE
+    printf -- "${SUCCESS}Configure core-site.xml successful.${END}\n"
+    printf -- "\n"
 else
-    log_warn "core-site.xml 文件已配置！"
+    printf -- "${SUCCESS}File core-site.xml configurtion is complete.${END}\n"
+    printf -- "\n"
 fi
 
-#################################
-# 配置 hdfs-site.xml 文件
-#################################
+#############################################################################################
+# configure hdfs-site.xml
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop hdfs-site.xml.${END}\n"
+
 WEB_CONFIG='
     <!-- nn web端访问地址-->\
 	<property>\
@@ -136,18 +134,24 @@ SECONDARY_WEB_CONFIG='
     </property>'
 
 HDFS_SITE_FILE=$HADOOP_HOME/etc/hadoop/hdfs-site.xml
-# 判断 hdfs-site.xml 文件是否已经配置
+# determine whether the file hdfs-site.xml is configured
 if [ $(grep -c "dfs.namenode.http-address" $HDFS_SITE_FILE) -eq '0' ]; then
-    sed -in '/<\/configuration>/i\'"$WEB_CONFIG" $HDFS_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$SECONDARY_WEB_CONFIG" $HDFS_SITE_FILE
-    log_info "hdfs-site.xml 文件配置完成！"
+    sed -i -r '/<\/configuration>/i\'"$WEB_CONFIG" $HDFS_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$SECONDARY_WEB_CONFIG" $HDFS_SITE_FILE
+
+    printf -- "${SUCCESS}Configure hdfs-site.xml successful.${END}\n"
+    printf -- "\n"
 else
-    log_warn "hdfs-site.xml 文件已配置！"
+    printf -- "${SUCCESS}File hdfs-site.xml configurtion is complete.${END}\n"
+    printf -- "\n"
 fi
 
-#################################
-# 配置 yarn-site.xml 文件
-#################################
+#############################################################################################
+# configure yarn-site.xml
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop yarn-site.xml.${END}\n"
+
 MR_CONFIG='
     <!-- 指定MR走shuffle -->\
     <property>\
@@ -191,22 +195,28 @@ LOG_RETAIN_CONFIG='
     </property>'
 
 YARN_SITE_FILE=$HADOOP_HOME/etc/hadoop/yarn-site.xml
-# 判断 yarn-site.xml 文件是否已经配置
+# determine whether the file yarn-site.xml is configured
 if [ $(grep -c "yarn.nodemanager.aux-services" $YARN_SITE_FILE) -eq '0' ]; then
-    sed -in '/<\/configuration>/i\'"$MR_CONFIG" $YARN_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$RM_HOSTNAME" $YARN_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$ENV_CONFIG" $YARN_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$LOG_AGGREGATION_CONFIG" $YARN_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$LOG_SERVER_CONFIG" $YARN_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$LOG_RETAIN_CONFIG" $YARN_SITE_FILE
-    log_info "yarn-site.xml 文件配置完成！"
+    sed -i -r '/<\/configuration>/i\'"$MR_CONFIG" $YARN_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$RM_HOSTNAME" $YARN_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$ENV_CONFIG" $YARN_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$LOG_AGGREGATION_CONFIG" $YARN_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$LOG_SERVER_CONFIG" $YARN_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$LOG_RETAIN_CONFIG" $YARN_SITE_FILE
+
+    printf -- "${SUCCESS}Configure yarn-site.xml successful.${END}\n"
+    printf -- "\n"
 else
-    log_warn "yarn-site.xml 文件已配置！"
+    printf -- "${SUCCESS}File yarn-site.xml configurtion is complete.${END}\n"
+    printf -- "\n"
 fi
 
-#################################
-# 配置 mapred-site.xml 文件
-#################################
+#############################################################################################
+# configure mapred-site.xml
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop mapred-site.xml.${END}\n"
+
 MR_YARN_CONFIG='
     <!-- 指定MapReduce程序运行在Yarn上 -->\
     <property>\
@@ -229,24 +239,42 @@ HISTORY_WEB_CONFIG='
     </property>'
 
 MR_SITE_FILE=$HADOOP_HOME/etc/hadoop/mapred-site.xml
-# 判断 mapred-site.xml 文件是否已经配置
+# determine whether the file mapred-site.xml is configured
 if [ $(grep -c "mapreduce.framework.name" $MR_SITE_FILE) -eq '0' ]; then
     sed -in '/<\/configuration>/i\'"$MR_YARN_CONFIG" $MR_SITE_FILE
     sed -in '/<\/configuration>/i\'"$HISTORY_ADDRESS_CONFIG" $MR_SITE_FILE
     sed -in '/<\/configuration>/i\'"$HISTORY_WEB_CONFIG" $MR_SITE_FILE
-    log_info "mapred-site.xml 文件配置完成！"
+
+    printf -- "${SUCCESS}Configure mapred-site.xml successful.${END}\n"
+    printf -- "\n"
 else
-    log_warn "mapred-site.xml 文件已配置！"
+    printf -- "${SUCCESS}File mapred-site.xml configurtion is complete.${END}\n"
+    printf -- "\n"
 fi
 
-#################################
-# 配置 workers
-#################################
+#############################################################################################
+# configure workers
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure hadoop workers.${END}\n"
+
 for host in ${workers[@]}; do
     echo $host >>$HADOOP_HOME/etc/hadoop/workers
 done
 
-# 格式化 NameNode
+#############################################################################################
+# distributing hadoop
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Distributing hadoop to all cluster nodes.${END}\n"
+
+sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS $HADOOP_HOME
+# distributing environment variables
+sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
+
+#############################################################################################
+# format namenode
+#############################################################################################
 if [ ! -d $HADOOP_HOME/data ]; then
     log_info "格式化 NameNode"
     ssh marmot@hadoop101 "hdfs namenode -format"
