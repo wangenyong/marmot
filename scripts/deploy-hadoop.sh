@@ -30,7 +30,7 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Install hadoop.${END}\n"
-
+printf -- "\n"
 pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C $PROJECT_DIR/
 
 #############################################################################################
@@ -52,11 +52,9 @@ if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
 
     source /etc/profile
     printf -- "${SUCCESS}HADOOP_HOME configure successful: $HADOOP_HOME${END}\n"
-    printf -- "\n"
 else
     source /etc/profile
     printf -- "${WARN}HADOOP_HOME configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
 #############################################################################################
@@ -107,10 +105,8 @@ if [ $(grep -c "fs.defaultFS" $CORE_SITE_FILE) -eq '0' ]; then
     sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_HOSTS" $CORE_SITE_FILE
     sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_GROUPS" $CORE_SITE_FILE
     printf -- "${SUCCESS}Configure core-site.xml successful.${END}\n"
-    printf -- "\n"
 else
     printf -- "${SUCCESS}File core-site.xml configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
 #############################################################################################
@@ -140,10 +136,8 @@ if [ $(grep -c "dfs.namenode.http-address" $HDFS_SITE_FILE) -eq '0' ]; then
     sed -i -r '/<\/configuration>/i\'"$SECONDARY_WEB_CONFIG" $HDFS_SITE_FILE
 
     printf -- "${SUCCESS}Configure hdfs-site.xml successful.${END}\n"
-    printf -- "\n"
 else
     printf -- "${SUCCESS}File hdfs-site.xml configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
 #############################################################################################
@@ -205,10 +199,8 @@ if [ $(grep -c "yarn.nodemanager.aux-services" $YARN_SITE_FILE) -eq '0' ]; then
     sed -i -r '/<\/configuration>/i\'"$LOG_RETAIN_CONFIG" $YARN_SITE_FILE
 
     printf -- "${SUCCESS}Configure yarn-site.xml successful.${END}\n"
-    printf -- "\n"
 else
     printf -- "${SUCCESS}File yarn-site.xml configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
 #############################################################################################
@@ -246,10 +238,8 @@ if [ $(grep -c "mapreduce.framework.name" $MR_SITE_FILE) -eq '0' ]; then
     sed -in '/<\/configuration>/i\'"$HISTORY_WEB_CONFIG" $MR_SITE_FILE
 
     printf -- "${SUCCESS}Configure mapred-site.xml successful.${END}\n"
-    printf -- "\n"
 else
     printf -- "${SUCCESS}File mapred-site.xml configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
 #############################################################################################
@@ -268,14 +258,16 @@ done
 printf -- "\n"
 printf -- "${INFO}>>> Distributing hadoop to all cluster nodes.${END}\n"
 
-sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS $HADOOP_HOME
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR
+
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS $HADOOP_HOME
 # distributing environment variables
-sh $SCRIPT_DIR/msync.sh $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 
 #############################################################################################
 # format namenode
 #############################################################################################
-if [ ! -d $HADOOP_HOME/data ]; then
-    log_info "格式化 NameNode"
-    ssh marmot@hadoop101 "hdfs namenode -format"
-fi
+#if [ ! -d $HADOOP_HOME/data ]; then
+#    log_info "格式化 NameNode"
+#    ssh marmot@hadoop101 "hdfs namenode -format"
+#fi
