@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#################################
+#############################################################################################
 #
 # hadoop version "3.1.3"
 #
 # install and configuer hadoop
 #
-#################################
+#############################################################################################
 
 # get script directory and home directory
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -277,3 +277,6 @@ if [ ! -d $HADOOP_HOME/data ]; then
         exit 1
     fi
 fi
+
+printf -- "\n"
+printf -- "${SUCCESS}========== HADOOP INSTALL SUCCESSFUL ==========${END}\n"
