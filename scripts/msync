@@ -21,6 +21,7 @@ function show_error_info() {
 }
 
 if [ $# -ne 2 ]; then
+    printf -- "Current input arguments: $*\n"
     show_error_info "Not right arguments."
     exit 1
 fi
@@ -37,7 +38,7 @@ IFS=',' read -ra nodes <<<$1
 LOCAL_HOST=$(hostname)
 
 # traverse all cluster nodes
-for host in ${lines[@]}; do
+for host in ${nodes[@]}; do
     if [ "$host" == "$LOCAL_HOST" ]; then
         printf -- "${WARN}Skipping localhost $LOCAL_HOST.${END}\n"
         continue

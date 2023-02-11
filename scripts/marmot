@@ -30,7 +30,7 @@ install)
     "hadoop")
         sh $SCRIPT_DIR/config-environment.sh
         sh $SCRIPT_DIR/deploy-jdk.sh
-        sh $SCRIPT_DIR/deploy-hadoop.sh
+        # sh $SCRIPT_DIR/deploy-hadoop.sh
         ;;
     "kettle")
         printf -- "kettle\n"

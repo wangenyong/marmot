@@ -218,5 +218,6 @@ printf -- "${SUCCESS}All public keys copied to cluster.${END}\n"
 printf -- "\n"
 
 sed -i -r '/^ENVIRONMENT_STATUS/s/.*/ENVIRONMENT_STATUS=0/' $HOME_DIR/conf/config.conf
-printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION SUCCESSFULL ==========${END}\n"
 printf -- "\n"
+printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION SUCCESSFULL ==========${END}\n"
+

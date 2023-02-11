@@ -19,7 +19,6 @@ source $HOME_DIR/conf/printf.conf
 printf -- "${INFO}========== INSTALL JAVA SDK ==========${END}\n"
 if [ -d $PROJECT_DIR/jdk* ]; then
     printf -- "${SUCCESS}========== JAVA SDK INSTALLED ==========${END}\n"
-    printf -- "\n"
     exit 0
 fi
 
@@ -28,7 +27,6 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Install java sdk.${END}\n"
-
 pv $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz | tar -zx -C $PROJECT_DIR/
 
 #############################################################################################
@@ -47,13 +45,23 @@ if [ $(grep -c "JAVA_HOME" $MARMOT_PROFILE) -eq '0' ]; then
     echo 'export PATH=$PATH:$JAVA_HOME/bin' >>$MARMOT_PROFILE
 
     source /etc/profile
-
     printf -- "${SUCCESS}JAVA_HOME configure successful: $JAVA_HOME${END}\n"
-    printf -- "\n"
 else
+    source /etc/profile
     printf -- "${WARN}JAVA_HOME configurtion is complete.${END}\n"
-    printf -- "\n"
 fi
 
-printf -- "${SUCCESS}========== JAVA INSTALL SUCCESSFUL ==========${END}\n"
+#############################################################################################
+# distributing jdk
+#############################################################################################
 printf -- "\n"
+printf -- "${INFO}>>> Distributing jdk to all cluster nodes.${END}\n"
+
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR
+
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS $JAVA_HOME
+# distributing environment variables
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
+
+printf -- "\n"
+printf -- "${SUCCESS}========== JAVA INSTALL SUCCESSFUL ==========${END}\n"
