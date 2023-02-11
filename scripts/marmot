@@ -13,6 +13,8 @@ printf -- '\n'
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading cluster nodes
+IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
@@ -40,12 +42,34 @@ install)
         printf -- '\n'
         ;;
     esac
-
+    ;;
+start)
+    printf -- "${INFO}========== START HADOOP CLUSTERS ==========${END}\n"
+    printf -- "${INFO}>>> Start hdfs.${END}\n"
+    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/start-dfs.sh"
+    printf -- "${INFO}>>> Start yarn.${END}\n"
+    ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/start-yarn.sh"
+    printf -- "${INFO}>>> Start hadoop historyserver.${END}\n"
+    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+    ;;
+stop)
+    printf -- "${INFO}========== CLOSE HADOOP CLUSTERS ==========${END}\n"
+    printf -- "${INFO}>>> Stop hadoop historyserver.${END}\n"
+    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
+    printf -- "${INFO}>>> Stop yarn.${END}\n"
+    ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/stop-yarn.sh"
+    printf -- "${INFO}>>> Stop hdfs.${END}\n"
+    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/stop-dfs.sh"
+    ;;
+status)
+    for host in ${workers[@]}; do
+        printf -- "${INFO}----- $host -----${END}\n"
+        ssh $host jps
+    done
     ;;
 remove)
-    IFS=',' read -ra array <<<$HADOOP_WORKERS
-    for host in ${array[@]}; do
-        echo =============== $host ===============
+    for host in ${workers[@]}; do
+        printf -- "${INFO}----- $host -----${END}\n"
         ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
     done
     ;;
