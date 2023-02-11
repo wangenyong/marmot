@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#################################
+#
+# 集群分发脚本
+#
+#################################
+# get script directory and home directory
+SCRIPT_DIR=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+HOME_DIR="$(dirname $SCRIPT_DIR)"
+# loading printf file
+source $HOME_DIR/conf/printf.conf
+
+function show_error_info() {
+    printf -- '\n'
+    printf -- "${ERROR}$1${END}\n"
+    printf -- '\n'
+    printf -- "${BOLD}USAGE: ${NORMAL}msync [nodes] [file or directory]${END}\n"
+    printf -- "${BOLD}${NORMAL}       nodes${END} - String split by ',' example: node1,node2,node3\n"
+    printf -- '\n'
+}
+
+if [ $# -ne 2 ]; then
+    show_error_info "Not right arguments."
+    exit 1
+fi
+
+if [ ! -e $2 ]; then
+    printf -- '\n'
+    printf -- "${BOLD}$2${END} ${ERROR}does not exists!${END}\n"
+    printf -- '\n'
+    exit 1
+fi
+
+IFS=',' read -ra nodes <<<$1
+
+LOCAL_HOST=$(hostname)
+
+# traverse all cluster nodes
+for host in ${lines[@]}; do
+    if [ "$host" == "$LOCAL_HOST" ]; then
+        printf -- "${WARN}Skipping localhost $LOCAL_HOST.${END}\n"
+        continue
+    fi
+    printf -- "${INFO}>>> Rsync $(basename $2) to $host.${END}\n"
+    for file in $2; do
+        if [ -e $file ]; then
+            pdir=$(cd -P $(dirname $file); pwd)
+            fname=$(basename $file)
+            ssh $host "mkdir -p $pdir"
+            rsync -a --info=progress2 $pdir/$fname $host:$pdir
+        else
+            printf -- "${ERROR}$file does not exists!${END}\n"
+        fi
+    done
+done
