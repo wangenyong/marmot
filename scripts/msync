@@ -40,10 +40,10 @@ LOCAL_HOST=$(hostname)
 # traverse all cluster nodes
 for host in ${nodes[@]}; do
     if [ "$host" == "$LOCAL_HOST" ]; then
-        printf -- "${WARN}Skipping localhost $LOCAL_HOST.${END}\n"
+        printf -- "${WARN}--> Skipping localhost $LOCAL_HOST.${END}\n"
         continue
     fi
-    printf -- "${INFO}>>> Rsync $(basename $2) to $host.${END}\n"
+    printf -- "${INFO}--> Rsync $(basename $2) to $host.${END}\n"
     for file in $2; do
         if [ -e $file ]; then
             pdir=$(cd -P $(dirname $file); pwd)

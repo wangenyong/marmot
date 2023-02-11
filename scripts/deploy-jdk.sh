@@ -19,6 +19,7 @@ source $HOME_DIR/conf/printf.conf
 printf -- "${INFO}========== INSTALL JAVA SDK ==========${END}\n"
 if [ -d $PROJECT_DIR/jdk* ]; then
     printf -- "${SUCCESS}========== JAVA SDK INSTALLED ==========${END}\n"
+    printf -- "\n"
     exit 0
 fi
 

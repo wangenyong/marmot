@@ -30,7 +30,7 @@ install)
     "hadoop")
         sh $SCRIPT_DIR/config-environment.sh
         sh $SCRIPT_DIR/deploy-jdk.sh
-        # sh $SCRIPT_DIR/deploy-hadoop.sh
+        sh $SCRIPT_DIR/deploy-hadoop.sh
         ;;
     "kettle")
         printf -- "kettle\n"
@@ -46,7 +46,7 @@ remove)
     IFS=',' read -ra array <<<$HADOOP_WORKERS
     for host in ${array[@]}; do
         echo =============== $host ===============
-        ssh $host "rm -rf /opt/marmot; rm -f /etc/profile.d/marmot_env.sh"
+        ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
     done
     ;;
 *)
