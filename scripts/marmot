@@ -34,6 +34,7 @@ install)
         sh $SCRIPT_DIR/deploy-jdk.sh
         sh $SCRIPT_DIR/deploy-hadoop.sh
         sh $SCRIPT_DIR/deploy-mysql.sh
+        sh $SCRIPT_DIR/deploy-hive.sh
         ;;
     "kettle")
         printf -- "kettle\n"
