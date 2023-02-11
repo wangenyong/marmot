@@ -28,7 +28,6 @@ fi
 #############################################################################################
 # install hive
 #############################################################################################
-printf -- "\n"
 printf -- "${INFO}>>> Install hive.${END}\n"
 pv $HOME_DIR/softwares/apache-hive-3.1.2-bin.tar.gz | tar -zx -C $PROJECT_DIR/
 
@@ -37,7 +36,7 @@ pv $HOME_DIR/softwares/apache-hive-3.1.2-bin.tar.gz | tar -zx -C $PROJECT_DIR/
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Configure hive environment variables.${END}\n"
-# 配置 hive 环境变量
+
 if [ $(grep -c "HIVE_HOME" $MARMOT_PROFILE) -eq '0' ]; then
     cd $PROJECT_DIR/apache-hive*
     HIVE_PATH="HIVE_HOME="$(pwd)

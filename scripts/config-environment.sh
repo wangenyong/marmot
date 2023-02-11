@@ -19,7 +19,6 @@ source $HOME_DIR/conf/printf.conf
 printf -- "${INFO}========== CHECK THE OPERATING SYSTEM ENVIRONMENT ==========${END}\n"
 if [ $ENVIRONMENT_STATUS -eq 0 ]; then
     printf -- "${SUCCESS}========== ENVIRONMENT CONFIGURATION IS COMPLETE ==========${END}\n"
-    printf -- "\n"
     exit 0
 fi
 
