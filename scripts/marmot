@@ -17,6 +17,7 @@ source $HOME_DIR/conf/printf.conf
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
+IFS=',' read -ra kettle_nodes <<<$KETTLE_NODES
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
@@ -57,7 +58,7 @@ install)
         printf -- '\n'
         ;;
     "zookeeper")
-m       sh $SCRIPT_DIR/deploy-zookeeper.sh
+        m sh $SCRIPT_DIR/deploy-zookeeper.sh
         printf -- '\n'
         printf -- '\n'
         ;;
@@ -67,7 +68,18 @@ m       sh $SCRIPT_DIR/deploy-zookeeper.sh
         printf -- '\n'
         ;;
     "kettle")
-        printf -- "kettle\n"
+        sh $SCRIPT_DIR/config-environment.sh "kettle"
+        printf -- '\n'
+        printf -- '\n'
+        sh $SCRIPT_DIR/deploy-jdk.sh
+        printf -- '\n'
+        printf -- '\n'
+        sh $SCRIPT_DIR/deploy-mysql.sh
+        printf -- '\n'
+        printf -- '\n'
+        sh $SCRIPT_DIR/deploy-kettle.sh
+        printf -- '\n'
+        printf -- '\n'
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
@@ -114,7 +126,14 @@ start)
         done
         ;;
     "kettle")
-        printf -- "kettle\n"
+        printf -- "${INFO}========== START KETTLE CLUSTERS ==========${END}\n"
+        KETTLE_HOME=/opt/marmot/data-integration
+        i=0
+        for host in ${kettle_nodes[@]}; do
+            printf -- "${INFO}--> Start $host kettle.${END}\n"
+            ssh $KETTLE_USER@$host "nohup $KETTLE_HOME/carte.sh $host 808$i >$KETTLE_HOME/logs/kettle.log 2>&1 &"
+            let i+=1
+        done
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
@@ -158,10 +177,17 @@ stop)
         done
         ;;
     "kettle")
-        printf -- "kettle\n"
+        printf -- "${INFO}========== STOP KETTLE CLUSTERS ==========${END}\n"
+        i=0
+        for host in ${kettle_nodes[@]}; do
+            printf -- "${INFO}--> Stop $host kettle.${END}\n"
+            cmd="fuser -k 808$i/tcp"
+            ssh $host $cmd
+            let i+=1
+        done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | azkaban | zookeeper | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -189,19 +215,40 @@ status)
         printf -- 'kafka status\n'
         ;;
     "kettle")
-        printf -- "kettle\n"
+        printf -- "${INFO}========== KETTLE STATUS ==========${END}\n"
+        i=0
+        for host in ${kettle_nodes[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            cmd="netstat -nlp | grep 808$i"
+            ssh $host $cmd
+            let i+=1
+        done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | azkaban | zookeeper | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
     ;;
 remove)
-    for host in ${workers[@]}; do
-        printf -- "${INFO}----- $host -----${END}\n"
-        ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
-    done
+    case "$2" in
+    "hadoop")
+        for host in ${workers[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
+        done
+        ;;
+    "kettle")
+        for host in ${kettle_nodes[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            ssh $host "rm -rf /opt/marmot/*"
+        done
+        ;;
+    *)
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot remove { hadoop | kettle }${END}\n"
+        printf -- '\n'
+        ;;
+    esac
     ;;
 *)
     echo "default (none of above)"
