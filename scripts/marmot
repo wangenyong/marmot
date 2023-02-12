@@ -15,6 +15,8 @@ source $HOME_DIR/conf/config.conf
 source $HOME_DIR/conf/printf.conf
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
+IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
+IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
@@ -49,6 +51,21 @@ install)
         printf -- '\n'
         printf -- '\n'
         ;;
+    "azkaban")
+        sh $SCRIPT_DIR/deploy-azkaban.sh
+        printf -- '\n'
+        printf -- '\n'
+        ;;
+    "zookeeper")
+m       sh $SCRIPT_DIR/deploy-zookeeper.sh
+        printf -- '\n'
+        printf -- '\n'
+        ;;
+    "kafka")
+        sh $SCRIPT_DIR/deploy-kafka.sh
+        printf -- '\n'
+        printf -- '\n'
+        ;;
     "kettle")
         printf -- "kettle\n"
         ;;
@@ -59,28 +76,126 @@ install)
     esac
     ;;
 start)
-    printf -- "${INFO}========== START HADOOP CLUSTERS ==========${END}\n"
-    printf -- "${INFO}>>> Start hdfs.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/start-dfs.sh"
-    printf -- "${INFO}>>> Start yarn.${END}\n"
-    ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/start-yarn.sh"
-    printf -- "${INFO}>>> Start hadoop historyserver.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+    case "$2" in
+    "hadoop")
+        printf -- "${INFO}========== START HADOOP CLUSTERS ==========${END}\n"
+        printf -- "${INFO}>>> Start hdfs.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/start-dfs.sh"
+        printf -- "${INFO}>>> Start yarn.${END}\n"
+        ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/start-yarn.sh"
+        printf -- "${INFO}>>> Start hadoop historyserver.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+        ;;
+    "azkaban")
+        printf -- "${INFO}========== START AZKABAN ==========${END}\n"
+        printf -- "${INFO}>>> Start azkaban executor.${END}\n"
+        for host in ${azkaban_nodes[@]}; do
+            printf -- "${INFO}--> Start $host executor.${END}\n"
+            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/start-exec.sh"
+            sleep 5s
+            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; curl -G \"$host:\$(<./executor.port)/executor?action=activate\" && echo "
+        done
+        printf -- "\n"
+        printf -- "${INFO}>>> Start azkaban web server.${END}\n"
+        ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
+        ;;
+    "zookeeper")
+        printf -- "${INFO}========== START ZOOKEEPER ==========${END}\n"
+        for host in ${zookeeper_nodes[@]}; do
+            printf -- "${INFO}--> Start $host zookeeper.${END}\n"
+            ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh start"
+        done
+        ;;
+    "kafka")
+        printf -- "${INFO}========== START KAFKA ==========${END}\n"
+        for host in ${kafka_nodes[@]}; do
+            printf -- "${INFO}--> Start $host kafka.${END}\n"
+            ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties"
+        done
+        ;;
+    "kettle")
+        printf -- "kettle\n"
+        ;;
+    *)
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- '\n'
+        ;;
+    esac
     ;;
 stop)
-    printf -- "${INFO}========== CLOSE HADOOP CLUSTERS ==========${END}\n"
-    printf -- "${INFO}>>> Stop hadoop historyserver.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
-    printf -- "${INFO}>>> Stop yarn.${END}\n"
-    ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/stop-yarn.sh"
-    printf -- "${INFO}>>> Stop hdfs.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/stop-dfs.sh"
+    case "$2" in
+    "hadoop")
+        printf -- "${INFO}========== STOP HADOOP CLUSTERS ==========${END}\n"
+        printf -- "${INFO}>>> Stop hadoop historyserver.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
+        printf -- "${INFO}>>> Stop yarn.${END}\n"
+        ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/stop-yarn.sh"
+        printf -- "${INFO}>>> Stop hdfs.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/stop-dfs.sh"
+        ;;
+    "azkaban")
+        printf -- "${INFO}========== STOP AZKABAN ==========${END}\n"
+        printf -- "${INFO}>>> Stop azkaban web server.${END}\n"
+        ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
+        printf -- "\n"
+        for host in ${azkaban_nodes[@]}; do
+            printf -- "${INFO}--> Stop $host executor.${END}\n"
+            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/shutdown-exec.sh"
+        done
+        ;;
+    "zookeeper")
+        printf -- "${INFO}========== STOP ZOOKEEPER ==========${END}\n"
+        for host in ${zookeeper_nodes[@]}; do
+            printf -- "${INFO}--> Stop $host zookeeper.${END}\n"
+            ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh stop"
+        done
+        ;;
+    "kafka")
+        printf -- "${INFO}========== STOP KAFKA ==========${END}\n"
+        for host in ${kafka_nodes[@]}; do
+            printf -- "${INFO}--> Stop $host kafka.${END}\n"
+            ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-stop.sh"
+        done
+        ;;
+    "kettle")
+        printf -- "kettle\n"
+        ;;
+    *)
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- '\n'
+        ;;
+    esac
     ;;
 status)
-    for host in ${workers[@]}; do
-        printf -- "${INFO}----- $host -----${END}\n"
-        ssh $host jps
-    done
+    case "$2" in
+    "hadoop")
+        printf -- "${INFO}========== HADOOP STATUS ==========${END}\n"
+        for host in ${workers[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            ssh $host jps
+        done
+        ;;
+    "azkaban")
+        printf -- 'azkaban status\n'
+        ;;
+    "zookeeper")
+        printf -- "${INFO}========== ZOOKEEPER STATUS ==========${END}\n"
+        for host in ${zookeeper_nodes[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh status"
+        done
+        ;;
+    "kafka")
+        printf -- 'kafka status\n'
+        ;;
+    "kettle")
+        printf -- "kettle\n"
+        ;;
+    *)
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- '\n'
+        ;;
+    esac
     ;;
 remove)
     for host in ${workers[@]}; do
