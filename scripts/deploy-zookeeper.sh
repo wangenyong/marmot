@@ -38,7 +38,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure zookeeper environment variables.${END}\n"
 
 if [ $(grep -c "ZOOKEEPER_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd /opt/marmot/apache-zookeeper*
+    cd $PROJECT_DIR/apache-zookeeper*
     ZOOKEEPER_HOME="ZOOKEEPER_HOME="$(pwd)
     cd - >/dev/null 2>&1
 
@@ -84,6 +84,7 @@ if [ ! -d "$ZOOKEEPER_HOME/data" ]; then
     done
     # distributing zookeeper config file
     sh $SCRIPT_DIR/msync $ZOOKEEPER_NODES $ZOOKEEPER_HOME/conf/zoo.cfg
+    
     printf -- "${SUCCESS}Configure zookeeper successful.${END}\n"
 else
     printf -- "${SUCCESS}Zookeeper configurtion is complete.${END}\n"
