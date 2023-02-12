@@ -170,8 +170,10 @@ if [[ $? -ne 0 ]]; then
     mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
     mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON metastore.* TO '$MYSQL_NORMAL_USER'@'%' IDENTIFIED BY '$MYSQL_NORMAL_PASS'"
     mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
+    
     printf -- "${INFO}--> Init database schema.${END}\n"
     schematool -initSchema -dbType mysql 1>/dev/null 2>&1
+
     printf -- "${SUCCESS}Configure metastore successful.${END}\n"
 else
     printf -- "${SUCCESS}Database metastore is complete.${END}\n"
