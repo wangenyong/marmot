@@ -62,24 +62,24 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop core-site.xml.${END}\n"
 
 NAME_NODE_CONFIG='
-    <!-- 指定 NameNode 的地址 -->\
+    <!--namenode work address -->\
     <property>\
         <name>fs.defaultFS</name>\
         <value>hdfs://'${workers[0]}':8020</value>\
     </property>'
 
 DATA_DIR_CONFIG='
-    <!-- 指定 hadoop 数据的存储目录 -->\
+    <!-- hadoop data directory -->\
     <property>\
         <name>hadoop.tmp.dir</name>\
         <value>'$HADOOP_HOME'/data</value>\
     </property>'
 
 HDFS_USER_CONFIG='
-    <!-- 配置 HDFS 网页登录使用的静态用户为 marmot -->\
+    <!-- hdfs web user -->\
     <property>\
         <name>hadoop.http.staticuser.user</name>\
-        <value>marmot</value>\
+        <value>'$HADOOP_USER'</value>\
     </property>'
 
 USER_MARMOT_HOSTS='
@@ -114,14 +114,14 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop hdfs-site.xml.${END}\n"
 
 WEB_CONFIG='
-    <!-- nn web端访问地址-->\
+    <!-- namenode web address-->\
 	<property>\
         <name>dfs.namenode.http-address</name>\
         <value>'${workers[0]}':9870</value>\
     </property>'
 
 SECONDARY_WEB_CONFIG='
-    <!-- 2nn web端访问地址-->\
+    <!-- secondary namemode web address-->\
     <property>\
         <name>dfs.namenode.secondary.http-address</name>\
         <value>'${workers[2]}':9868</value>\
@@ -145,42 +145,38 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop yarn-site.xml.${END}\n"
 
 MR_CONFIG='
-    <!-- 指定MR走shuffle -->\
+    <!--  mapreduce mode -->\
     <property>\
         <name>yarn.nodemanager.aux-services</name>\
         <value>mapreduce_shuffle</value>\
     </property>'
 
 RM_HOSTNAME='
-    <!-- 指定ResourceManager的地址-->\
+    <!-- resource_manager address-->\
     <property>\
         <name>yarn.resourcemanager.hostname</name>\
         <value>'${workers[1]}'</value>\
     </property>'
 
 ENV_CONFIG='
-    <!-- 环境变量的继承 -->\
     <property>\
         <name>yarn.nodemanager.env-whitelist</name>\
         <value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME</value>\
     </property>'
 
 LOG_AGGREGATION_CONFIG='
-    <!-- 开启日志聚集功能 -->\
     <property>\
         <name>yarn.log-aggregation-enable</name>\
         <value>true</value>\
     </property>'
 
 LOG_SERVER_CONFIG='
-    <!-- 设置日志聚集服务器地址 -->\
     <property>\
         <name>yarn.log.server.url</name>\
         <value>'${workers[0]}':19888/jobhistory/logs</value>\
     </property>'
 
 LOG_RETAIN_CONFIG='
-    <!-- 设置日志保留时间为7天 -->\
     <property>\
         <name>yarn.log-aggregation.retain-seconds</name>\
         <value>604800</value>\
@@ -208,21 +204,21 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop mapred-site.xml.${END}\n"
 
 MR_YARN_CONFIG='
-    <!-- 指定MapReduce程序运行在Yarn上 -->\
+    <!-- mapreduce work on yarn -->\
     <property>\
         <name>mapreduce.framework.name</name>\
         <value>yarn</value>\
     </property>'
 
 HISTORY_ADDRESS_CONFIG='
-    <!-- 历史服务器端地址 -->\
+    <!-- historyserver address -->\
     <property>\
         <name>mapreduce.jobhistory.address</name>\
         <value>'${workers[0]}':10020</value>\
     </property>'
 
 HISTORY_WEB_CONFIG='
-    <!-- 历史服务器 Web 端地址 -->\
+    <!-- historyserver web address -->\
     <property>\
         <name>mapreduce.jobhistory.webapp.address</name>\
         <value>'${workers[0]}':19888</value>\
