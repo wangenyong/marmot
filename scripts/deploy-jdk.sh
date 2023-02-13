@@ -23,6 +23,18 @@ if [ -d $PROJECT_DIR/jdk* ]; then
     exit 0
 fi
 
+if [[ $1 == "kettle" ]]; then
+    NODES=$KETTLE_NODES
+    NORMAL_USER=$KETTLE_USER
+    NORMAL_PASS=$KETTLE_PASS
+    printf -- "Current selection: ${SUCCESS}kettle.${END}\n"
+else
+    NODES=$HADOOP_WORKERS
+    NORMAL_USER=$HADOOP_USER
+    NORMAL_PASS=$HADOOP_PASS
+    printf -- "Current selection: ${SUCCESS}hadoop.${END}\n"
+fi
+
 #############################################################################################
 # install java sdk
 #############################################################################################
@@ -56,14 +68,13 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Distributing jdk to all cluster nodes.${END}\n"
-
 # modify permissions
-chown $HADOOP_USER:$HADOOP_USER -R $JAVA_HOME
+chown $NORMAL_USER:$NORMAL_PASS -R $JAVA_HOME
 # distributing jdk
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS $JAVA_HOME
+sh $SCRIPT_DIR/msync $NODES $JAVA_HOME
 printf -- "\n"
 # distributing environment variables
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
+sh $SCRIPT_DIR/msync $NODES /etc/profile.d/marmot_env.sh
 
 printf -- "\n"
 printf -- "${SUCCESS}========== JAVA INSTALL SUCCESSFUL ==========${END}\n"

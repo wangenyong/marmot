@@ -78,13 +78,13 @@ install)
         printf -- '\n'
         ;;
     "kettle")
-        sh $SCRIPT_DIR/config-environment.sh "kettle"
+        sh $SCRIPT_DIR/config-environment.sh $2
         printf -- '\n'
         printf -- '\n'
-        sh $SCRIPT_DIR/deploy-jdk.sh
+        sh $SCRIPT_DIR/deploy-jdk.sh $2
         printf -- '\n'
         printf -- '\n'
-        sh $SCRIPT_DIR/deploy-mysql.sh
+        sh $SCRIPT_DIR/deploy-mysql.sh -F
         printf -- '\n'
         printf -- '\n'
         sh $SCRIPT_DIR/deploy-kettle.sh
@@ -273,8 +273,8 @@ remove)
         ;;
     "kettle")
         for host in ${kettle_nodes[@]}; do
-            printf -- "${INFO}----- $host -----${END}\n"
-            ssh $host "rm -rf /opt/marmot/*"
+            printf -- "${INFO}----- remove $host kettle -----${END}\n"
+            ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
         done
         ;;
     *)

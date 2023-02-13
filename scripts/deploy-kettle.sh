@@ -121,7 +121,7 @@ printf -- "${INFO}>>> Distributing kettle to all cluster nodes.${END}\n"
 # modify permissions
 chown $KETTLE_USER:$KETTLE_USER -R $KETTLE_HOME
 # distributing kettle
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS $KETTLE_HOME
+sh $SCRIPT_DIR/msync $KETTLE_NODES $KETTLE_HOME
 
 printf -- "\n"
 printf -- "${SUCCESS}========== KETTLE INSTALL SUCCESSFUL ==========${END}\n"
