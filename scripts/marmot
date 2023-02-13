@@ -84,7 +84,7 @@ install)
         sh $SCRIPT_DIR/deploy-jdk.sh $2
         printf -- '\n'
         printf -- '\n'
-        sh $SCRIPT_DIR/deploy-mysql.sh -F
+        sh $SCRIPT_DIR/deploy-mysql.sh
         printf -- '\n'
         printf -- '\n'
         sh $SCRIPT_DIR/deploy-kettle.sh
@@ -92,7 +92,7 @@ install)
         printf -- '\n'
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | zookeeper | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
