@@ -267,7 +267,7 @@ remove)
     case "$2" in
     "hadoop")
         for host in ${workers[@]}; do
-            printf -- "${INFO}----- $host -----${END}\n"
+            printf -- "${INFO}----- remove $host hadoop -----${END}\n"
             ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
         done
         ;;

@@ -264,7 +264,7 @@ sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 #############################################################################################
 if [ ! -d $HADOOP_HOME/data ]; then
     printf -- "${INFO}>>> Format namenode.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "hdfs namenode -format 1>/dev/null 2>&1"
+    ssh $HADOOP_USER@${workers[0]} "hdfs namenode -format | pv -l >/dev/null"
     if [ $? -eq 0 ]; then
         printf -- "${SUCCESS}Format namenode successful.${END}\n"
     else

@@ -64,20 +64,7 @@ else
         exit 1
     fi
 fi
-# package pv
-pv=$(rpm -qa | grep "^pv.*")
-if [ $? -eq 0 ]; then
-    printf -- "${SUCCESS}${pv} has been installed.${END}\n"
-else
-    printf -- "Install pv...\n"
-    rpm -ivh "$HOME_DIR/softwares/packages/pv-1.4.6-1.el7.x86_64.rpm"
-    if [ $? -eq 0 ]; then
-        printf -- "${SUCCESS}pv install successfully.${END}\n"
-    else
-        printf -- "${ERROR}pv install failed.${END}\n"
-        exit 1
-    fi
-fi
+
 # package unzip
 unzip=$(rpm -qa | grep "^unzip.*")
 if [ $? -eq 0 ]; then
@@ -132,6 +119,14 @@ for host in $HOST_LIST; do
     printf -- "${INFO}----- $host -----${END}\n"
     sshpass -p $ADMIN_PASS scp $HOME_DIR/softwares/packages/rsync-3.1.2-10.el7.x86_64.rpm $ADMIN_USER@$host:~/
     sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host "rpm -ivh rsync-3.1.2-10.el7.x86_64.rpm"
+done
+
+printf -- "\n"
+printf -- "${INFO}>>> Install pv on all cluster.${END}\n"
+for host in $HOST_LIST; do
+    printf -- "${INFO}----- $host -----${END}\n"
+    sshpass -p $ADMIN_PASS scp $HOME_DIR/softwares/packages/pv-1.4.6-1.el7.x86_64.rpm $ADMIN_USER@$host:~/
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host "rpm -ivh pv-1.4.6-1.el7.x86_64.rpm"
 done
 
 #############################################################################################
@@ -214,7 +209,6 @@ for host in $HOST_LIST; do
     sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_chmod
 done
 printf -- "${SUCCESS}All public keys copied to cluster.${END}\n"
-printf -- "\n"
 
 sed -i -r '/^ENVIRONMENT_STATUS/s/.*/ENVIRONMENT_STATUS=0/' $HOME_DIR/conf/config.conf
 printf -- "\n"

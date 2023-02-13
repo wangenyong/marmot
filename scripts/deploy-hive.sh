@@ -172,7 +172,7 @@ if [[ $? -ne 0 ]]; then
     mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
     
     printf -- "${INFO}--> Init database schema.${END}\n"
-    schematool -initSchema -dbType mysql 1>/dev/null 2>&1
+    schematool -initSchema -dbType mysql | pv -l >/dev/null
 
     printf -- "${SUCCESS}Configure metastore successful.${END}\n"
 else
