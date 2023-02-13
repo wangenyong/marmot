@@ -29,6 +29,13 @@ if [ ${#@} -eq 0 ]; then
     exit 0
 fi
 
+function check_process() {
+    pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print$2}')
+    ppid=$(netstat -nltp 2>/dev/null | grep $2 | awk '{print $7}' | cut -d '/' -f 1)
+    echo $pid
+    [[ "$pid" =~ "$ppid" ]] && [ "$ppid" ] && return 0 || return 1
+}
+
 case "$1" in
 install)
     case "$2" in
@@ -42,7 +49,7 @@ install)
         sh $SCRIPT_DIR/deploy-hadoop.sh
         printf -- '\n'
         printf -- '\n'
-        sh $SCRIPT_DIR/deploy-mysql.sh
+        sh $SCRIPT_DIR/deploy-mysql.sh $3
         printf -- '\n'
         printf -- '\n'
         sh $SCRIPT_DIR/deploy-hive.sh
@@ -97,6 +104,17 @@ start)
         ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/start-yarn.sh"
         printf -- "${INFO}>>> Start hadoop historyserver.${END}\n"
         ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+        printf -- "${INFO}>>> Start hive.${END}\n"
+        printf -- "${INFO}--> Start HiveMetastore.${END}\n"
+        metapid=$(check_process HiveMetastore 9083)
+        cmd="ssh $HADOOP_USER@${workers[0]} nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
+        [ -z "$metapid" ] && eval $cmd || printf -- "${WARN}Metastroe started.${END}\n"
+        printf -- "${INFO}--> Start HiveServer2.${END}\n"
+        server2pid=$(check_process HiveServer2 10000)
+        cmd="ssh $HADOOP_USER@${workers[0]} nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
+        [ -z "$server2pid" ] && eval $cmd || printf -- "${WARN}Hiveserver2 started.${END}\n"
+        printf -- "${INFO}>>> Start spark historyserver.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/start-history-server.sh"
         ;;
     "azkaban")
         printf -- "${INFO}========== START AZKABAN ==========${END}\n"
@@ -136,7 +154,7 @@ start)
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | azkaban | zookeeper | kafka | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | azkaban | zookeeper | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -145,6 +163,15 @@ stop)
     case "$2" in
     "hadoop")
         printf -- "${INFO}========== STOP HADOOP CLUSTERS ==========${END}\n"
+        printf -- "${INFO}>>> Stop spark historyserver.${END}\n"
+        ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/stop-history-server.sh"
+        printf -- "${INFO}>>> Stop hive.${END}\n"
+        printf -- "${INFO}--> Stop HiveMetastore.${END}\n"
+        metapid=$(check_process HiveMetastore 9083)
+        [ "$metapid" ] && kill $metapid || printf -- "${WARN}Metastroe have not started.${END}\n"
+        printf -- "${INFO}--> Stop HiveServer2.${END}\n"
+        server2pid=$(check_process HiveServer2 10000)
+        [ "$server2pid" ] && kill $server2pid || printf -- "${WARN}HiveServer2 have not started.${END}\n"
         printf -- "${INFO}>>> Stop hadoop historyserver.${END}\n"
         ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
         printf -- "${INFO}>>> Stop yarn.${END}\n"
@@ -195,11 +222,14 @@ stop)
 status)
     case "$2" in
     "hadoop")
-        printf -- "${INFO}========== HADOOP STATUS ==========${END}\n"
+        printf -- "${INFO}========== HADOOP CLUSTERS STATUS ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}----- $host -----${END}\n"
             ssh $host jps
         done
+        printf -- "${INFO}----- hive services status -----${END}\n"
+        check_process HiveMetastore 9083 >/dev/null && printf -- "${SUCCESS}HiveMetastore running normally.${END}\n" || printf -- "${WARN}HiveMetastore running abnormally.${END}\n"
+        check_process HiveServer2 10000 >/dev/null && printf -- "${SUCCESS}HiveServer2 running normally${END}\n" || printf -- "${WARN}HiveServer2 running abnormally.${END}\n"
         ;;
     "azkaban")
         printf -- 'azkaban status\n'
