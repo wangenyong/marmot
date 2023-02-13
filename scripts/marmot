@@ -13,10 +13,13 @@ printf -- '\n'
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading environment
+source /etc/profile
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
+IFS=',' read -ra kafka_nodes <<<$KAFKA_NODES
 IFS=',' read -ra kettle_nodes <<<$KETTLE_NODES
 
 # no arguments
@@ -65,7 +68,7 @@ install)
         printf -- '\n'
         ;;
     "zookeeper")
-        m sh $SCRIPT_DIR/deploy-zookeeper.sh
+        sh $SCRIPT_DIR/deploy-zookeeper.sh
         printf -- '\n'
         printf -- '\n'
         ;;
