@@ -52,7 +52,7 @@ install)
         sh $SCRIPT_DIR/deploy-hadoop.sh
         printf -- '\n'
         printf -- '\n'
-        sh $SCRIPT_DIR/deploy-mysql.sh $3
+        sh $SCRIPT_DIR/deploy-mysql.sh -F
         printf -- '\n'
         printf -- '\n'
         sh $SCRIPT_DIR/deploy-hive.sh
