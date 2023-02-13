@@ -228,7 +228,7 @@ status)
         printf -- "${INFO}========== HADOOP CLUSTERS STATUS ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}----- $host -----${END}\n"
-            ssh $host jps
+            ssh $HADOOP_USER@$host jps
         done
         printf -- "${INFO}----- hive services status -----${END}\n"
         check_process HiveMetastore 9083 >/dev/null && printf -- "${SUCCESS}HiveMetastore running normally.${END}\n" || printf -- "${WARN}HiveMetastore running abnormally.${END}\n"
