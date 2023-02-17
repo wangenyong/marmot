@@ -12,7 +12,7 @@
 
 [中文版](translations/README-cn.md)
 
-> Marmot doing nothing surprising. Just put big data components together.
+> Marmot doing nothing exciting. Just put big data components together.
 
 ## Architecture
 
