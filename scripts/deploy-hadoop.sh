@@ -47,6 +47,8 @@ if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
     echo "export "$HADOOP_PATH >>$MARMOT_PROFILE
     echo 'export PATH=$PATH:$HADOOP_HOME/bin' >>$MARMOT_PROFILE
     echo 'export PATH=$PATH:$HADOOP_HOME/sbin' >>$MARMOT_PROFILE
+    echo "export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop" >>$MARMOT_PROFILE
+    echo 'export HADOOP_CLASSPATH=`hadoop classpath`' >>$MARMOT_PROFILE
 
     source /etc/profile
     printf -- "${SUCCESS}HADOOP_HOME configure successful: $HADOOP_HOME${END}\n"

@@ -69,7 +69,7 @@ fi
 printf -- "\n"
 printf -- "${INFO}>>> Distributing jdk to all cluster nodes.${END}\n"
 # modify permissions
-chown $NORMAL_USER:$NORMAL_PASS -R $JAVA_HOME
+chown $NORMAL_USER:$NORMAL_USER -R $JAVA_HOME
 # distributing jdk
 sh $SCRIPT_DIR/msync $NODES $JAVA_HOME
 printf -- "\n"
