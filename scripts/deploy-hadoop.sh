@@ -86,13 +86,13 @@ HDFS_USER_CONFIG='
 
 USER_MARMOT_HOSTS='
     <property>\
-        <name>hadoop.proxyuser.marmot.hosts</name>\
+        <name>hadoop.proxyuser.'$HADOOP_USER'.hosts</name>\
         <value>*</value>\
     </property>'
 
 USER_MARMOT_GROUPS='
     <property>\
-        <name>hadoop.proxyuser.marmot.groups</name>\
+        <name>hadoop.proxyuser.'$HADOOP_USER'.groups</name>\
         <value>*</value>\
     </property>'
 

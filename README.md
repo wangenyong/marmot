@@ -10,7 +10,7 @@
 ![hadoop](https://img.shields.io/badge/kafka-3.0.0-blue)
 ![hadoop](https://img.shields.io/badge/kettle-7.1.0-blue)
 
-[中文版](translations/README-cn.md)
+<!-- [中文版](translations/README-cn.md) -->
 
 > Marmot doing nothing exciting. Just put big data components together.
 
@@ -20,9 +20,14 @@
 
 ## Usage
 
-### Edit the configuration file
+### Configuration file
+Edit the configuration file `conf/config.conf` according to your own cluster information.
 
+### Install
+```bash
+# Install Hadoop
 
+```
 
 ## Examples
 
