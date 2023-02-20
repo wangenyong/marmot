@@ -16,9 +16,13 @@
 
 ## Architecture
 
-
+![hadoop architecture](https://development-1253817761.cos.ap-chengdu.myqcloud.com/marmot/hadoop%20architecture.png)
 
 ## Usage
+
+### Edit the configuration file
+
+
 
 ## Examples
 
