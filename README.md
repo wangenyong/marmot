@@ -1,6 +1,7 @@
 # Marmot
 
-![hadoop](https://img.shields.io/badge/java-1.8.0-blue)
+![marmot](https://img.shields.io/badge/marmot-v0.0.2-blue)
+<!-- 
 ![hadoop](https://img.shields.io/badge/mysql-5.7.16-blue)
 ![hadoop](https://img.shields.io/badge/hadoop-3.1.3-blue)
 ![hadoop](https://img.shields.io/badge/spark-3.0.0-blue)
@@ -9,6 +10,7 @@
 ![hadoop](https://img.shields.io/badge/zookeeper-3.5.7-blue)
 ![hadoop](https://img.shields.io/badge/kafka-3.0.0-blue)
 ![hadoop](https://img.shields.io/badge/kettle-7.1.0-blue)
+>
 
 <!-- [中文版](translations/README-cn.md) -->
 
@@ -16,16 +18,26 @@
 
 ![hadoop architecture](https://development-1253817761.cos.ap-chengdu.myqcloud.com/marmot/hadoop%20architecture.png)
 
-## Usage
+## Download
 
-### Configuration file
-Edit the configuration file `conf/config.conf` according to your own cluster information.
+### Scripts
+[Latest Release](https://github.com/wangenyong/marmot/releases/tag/v0.0.2)
+
+### Softwares dependencies
 
 ### Install
+
+
+
 ```bash
 # Install Hadoop
 
 ```
+
+## Usage
+
+### Configuration file
+Edit the configuration file `conf/config.conf` according to your own cluster information.
 
 ## Examples
 
