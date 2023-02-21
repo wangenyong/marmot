@@ -10,13 +10,29 @@
 ![hadoop](https://img.shields.io/badge/zookeeper-3.5.7-blue)
 ![hadoop](https://img.shields.io/badge/kafka-3.0.0-blue)
 ![hadoop](https://img.shields.io/badge/kettle-7.1.0-blue)
->
+-->
+
+> **This project is use for testing. Not prepared for production.**
 
 <!-- [中文版](translations/README-cn.md) -->
 
 ## Architecture
 
 ![hadoop architecture](https://development-1253817761.cos.ap-chengdu.myqcloud.com/marmot/hadoop%20architecture.png)
+
+## Environments
+* MySQL `5.7.16`
+* Hadoop `3.1.3`
+* Spark `3.0.0`
+* Hive `3.1.2`
+* Azkaban `3.84.4`
+* Zookeeper `3.5.7`
+* Kettle `7.1.0`
+
+## OS Adaptation
+* CentOS `7.5`
+
+## 
 
 ## Download
 
@@ -25,7 +41,7 @@
 
 ### Softwares dependencies
 
-### Install
+## Install
 
 
 
@@ -41,7 +57,7 @@ Edit the configuration file `conf/config.conf` according to your own cluster inf
 
 ## Examples
 
-## OS Adaptation
+
 
 * HDFS NameNode: http://192.168.10.101:9870
 * YARN ResourceManager: http://192.168.10.102:8088
