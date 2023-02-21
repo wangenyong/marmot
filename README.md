@@ -12,8 +12,6 @@
 
 <!-- [中文版](translations/README-cn.md) -->
 
-> Marmot doing nothing exciting. Just put big data components together.
-
 ## Architecture
 
 ![hadoop architecture](https://development-1253817761.cos.ap-chengdu.myqcloud.com/marmot/hadoop%20architecture.png)
