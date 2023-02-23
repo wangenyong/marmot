@@ -1,23 +1,13 @@
 # Marmot
 
 ![marmot](https://img.shields.io/badge/marmot-v0.0.2-blue)
-<!-- 
-![hadoop](https://img.shields.io/badge/mysql-5.7.16-blue)
-![hadoop](https://img.shields.io/badge/hadoop-3.1.3-blue)
-![hadoop](https://img.shields.io/badge/spark-3.0.0-blue)
-![hadoop](https://img.shields.io/badge/hive-3.1.2-blue)
-![hadoop](https://img.shields.io/badge/azkaban-3.84.4-blue)
-![hadoop](https://img.shields.io/badge/zookeeper-3.5.7-blue)
-![hadoop](https://img.shields.io/badge/kafka-3.0.0-blue)
-![hadoop](https://img.shields.io/badge/kettle-7.1.0-blue)
--->
 
-> **This project is use for testing. Not prepared for production.**
+
+> **This project is use for testing now. Not prepared for production.**
 
 <!-- [中文版](translations/README-cn.md) -->
 
 ## Architecture
-
 ![hadoop architecture](https://development-1253817761.cos.ap-chengdu.myqcloud.com/marmot/hadoop%20architecture.png)
 
 ## Environments
@@ -32,22 +22,91 @@
 ## OS Adaptation
 * CentOS `7.5`
 
-## 
+## Cluster Node
+* 192.168.10.101
+* 192.168.10.102
+* 192.168.10.103
+* 192.168.10.104
 
-## Download
+## Downloads
 
 ### Scripts
-[Latest Release](https://github.com/wangenyong/marmot/releases/tag/v0.0.2)
+[Latest Release Url](https://github.com/wangenyong/marmot/releases/tag/v0.0.2)
 
 ### Softwares dependencies
+[Baidu Netdisk Url](https://pan.baidu.com/s/1koS5BsZcj-6DTjGW2_eEaw?pwd=n4am)
 
 ## Install
-
-
-
+Copy script files to first node of cluster.
 ```bash
-# Install Hadoop
-
+scp marmot-0.0.2.tar.gz root@192.168.10.101:/root/
+```
+Decompress to the current directory.
+```bash
+ssh root@192.168.10.101
+tar -zxvf marmot-0.0.2.tar.gz
+```
+Copy softwares to marmot project directory.
+```bash
+scp -v -r softwares root@192.168.10.101:/root/marmot/
+```
+Finally project dir list:
+```bash
+[root@hadoop101 ~]# tree marmot
+marmot
+├── conf
+│   ├── config.conf
+│   ├── printf.conf
+│   └── welcome.figlet
+├── README.md
+├── scripts
+│   ├── config-environment.sh
+│   ├── deploy-azkaban.sh
+│   ├── deploy-flink.sh
+│   ├── deploy-hadoop.sh
+│   ├── deploy-hive.sh
+│   ├── deploy-jdk.sh
+│   ├── deploy-kafka.sh
+│   ├── deploy-kettle.sh
+│   ├── deploy-mysql.sh
+│   ├── deploy-spark.sh
+│   ├── deploy-vsftp.sh
+│   ├── deploy-zookeeper.sh
+│   ├── marmot
+│   └── msync
+├── softwares
+│   ├── apache-hive-3.1.2-bin.tar.gz
+│   ├── apache-zookeeper-3.5.7-bin.tar.gz
+│   ├── azkaban
+│   │   ├── azkaban-db-3.84.4.tar.gz
+│   │   ├── azkaban-exec-server-3.84.4.tar.gz
+│   │   └── azkaban-web-server-3.84.4.tar.gz
+│   ├── flink-1.13.0-bin-scala_2.12.tgz
+│   ├── hadoop-3.1.3.tar.gz
+│   ├── jdk-8u212-linux-x64.tar.gz
+│   ├── kafka_2.11-2.4.1.tgz
+│   ├── kafka_2.12-3.0.0.tgz
+│   ├── mysql
+│   │   ├── 01_mysql-community-common-5.7.16-1.el7.x86_64.rpm
+│   │   ├── 02_mysql-community-libs-5.7.16-1.el7.x86_64.rpm
+│   │   ├── 03_mysql-community-libs-compat-5.7.16-1.el7.x86_64.rpm
+│   │   ├── 04_mysql-community-client-5.7.16-1.el7.x86_64.rpm
+│   │   ├── 05_mysql-community-server-5.7.16-1.el7.x86_64.rpm
+│   │   └── mysql-connector-java-5.1.27-bin.jar
+│   ├── packages
+│   │   ├── psmisc-22.20-17.el7.x86_64.rpm
+│   │   ├── pv-1.4.6-1.el7.x86_64.rpm
+│   │   ├── rsync-3.1.2-10.el7.x86_64.rpm
+│   │   ├── sshpass-1.06-1.el7.x86_64.rpm
+│   │   ├── unzip-6.0-21.el7.x86_64.rpm
+│   │   └── vsftpd-3.0.2-28.el7.x86_64.rpm
+│   ├── pdi-ce-7.1.0.0-12.zip
+│   ├── spark-3.0.0-bin-hadoop3.2.tgz
+│   └── spark-3.0.0-bin-without-hadoop.tgz
+├── template
+│   └── configuration.xml
+└── translations
+    └── README-cn.md
 ```
 
 ## Usage
