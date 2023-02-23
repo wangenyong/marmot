@@ -50,7 +50,7 @@ Copy softwares to marmot project directory.
 ```bash
 scp -v -r softwares root@192.168.10.101:/root/marmot/
 ```
-Finally project dir list:
+Final project dir list:
 ```bash
 [root@hadoop101 ~]# tree marmot
 marmot
@@ -111,12 +111,78 @@ marmot
 
 ## Usage
 
-### Configuration file
-Edit the configuration file `conf/config.conf` according to your own cluster information.
+### Edit the configuration file `conf/config.conf`
 
-## Examples
+```bash
+# project home dir
+PROJECT_DIR=/opt/marmot
+MARMOT_PROFILE=/etc/profile.d/marmot_env.sh
+# operation environment, software dependency
+ENVIRONMENT_STATUS=1
 
+# administrator user info
+ADMIN_USER=root
+ADMIN_PASS=root
 
+# hadoop user info
+HADOOP_USER=marmot
+HADOOP_PASS=marmot
+
+# hadoop clusters
+HADOOP_WORKERS=192.168.10.101,192.168.10.102,192.168.10.103,192.168.10.104
+
+# kettle user info
+KETTLE_USER=kettle
+KETTLE_PASS=kettle
+
+# kettle clusters
+KETTLE_NODES=192.168.10.80,192.168.10.81
+
+MYSQL_ROOT_PASS=yee-ha7X
+MYSQL_NORMAL_USER=marmot
+MYSQL_NORMAL_PASS=Phee]d1f
+MYSQL_AZKABAN_USER=azkaban
+MYSQL_AZKABAN_PASS=Tai~pui2
+
+# azkaban clusters
+AZKABAN_NODES=192.168.10.101,192.168.10.102,192.168.10.103
+AZKABAN_USER=marmot
+AZKABAN_PASS=azkaban
+
+# zookeeper clusters
+ZOOKEEPER_NODES=192.168.10.101,192.168.10.102,192.168.10.103
+
+# kafka clusters
+KAFKA_NODES=192.168.10.101,192.168.10.102,192.168.10.103
+```
+
+### Enter the project directory
+```bash
+ssh root@192.168.10.101
+cd marmot
+```
+### Install hadoop
+```bash
+./scripts/marmot install hadoop
+```
+### Start hadoop
+```bash
+./scripts/marmot start hadoop
+```
+### Show hadoop status
+```bash
+./scripts/marmot status hadoop
+```
+### Stop hadoop
+```bash
+./scripts/marmot stop hadoop
+```
+### Remove hadoop
+```bash
+./scripts/marmot remove hadoop
+```
+
+## Common Service Address
 
 * HDFS NameNode: http://192.168.10.101:9870
 * YARN ResourceManager: http://192.168.10.102:8088
