@@ -24,8 +24,18 @@ IFS=',' read -ra kettle_nodes <<<$KETTLE_NODES
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
-    if [ ! -d "$PROJECT_DIR" ]; then
-        printf -- "The project have not been installed.\n"
+    if [ -d "$PROJECT_DIR" ]; then
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            printf -- "The hadoop has been installed.\n"
+            printf -- "You can use it by command: ${BOLD}${NORMAL}marmot { start | status | stop } hadoop${END}\n"
+            printf -- '\n'
+        else
+            printf -- "The hadoop have not been installed.\n"
+            printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+    else
+        printf -- "The project have not been initialized.\n"
         printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
         printf -- '\n'
     fi
@@ -63,19 +73,27 @@ install)
         printf -- '\n'
         ;;
     "azkaban")
-        sh $SCRIPT_DIR/deploy-azkaban.sh
-        printf -- '\n'
-        printf -- '\n'
-        ;;
-    "zookeeper")
-        sh $SCRIPT_DIR/deploy-zookeeper.sh
-        printf -- '\n'
-        printf -- '\n'
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-azkaban.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "The hadoop have not been installed. You should install it first.\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
         ;;
     "kafka")
-        sh $SCRIPT_DIR/deploy-kafka.sh
-        printf -- '\n'
-        printf -- '\n'
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-zookeeper.sh
+            sh $SCRIPT_DIR/deploy-kafka.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "The hadoop have not been installed. You should install it first.\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
         ;;
     "kettle")
         sh $SCRIPT_DIR/config-environment.sh $2
