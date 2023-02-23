@@ -36,7 +36,7 @@ if [ ${#@} -eq 0 ]; then
         fi
     else
         printf -- "The project have not been initialized.\n"
-        printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | kettle | kafka }${END}\n"
+        printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | azkaban | kafka | kettle }${END}\n"
         printf -- '\n'
     fi
     exit 0
@@ -110,7 +110,7 @@ install)
         printf -- '\n'
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | zookeeper | kafka | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -284,19 +284,64 @@ status)
 remove)
     case "$2" in
     "hadoop")
-        for host in ${workers[@]}; do
-            printf -- "${INFO}----- remove $host hadoop -----${END}\n"
-            ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
-        done
+        # prompting for choice
+        read -p "Do you want to remove all hadoop components. (y)Yes/(n)No:- " choice
+        case $choice in
+        [yY]*) 
+            for host in ${workers[@]}; do
+                printf -- "${INFO}----- remove $host hadoop -----${END}\n"
+                ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
+            done
+            ;;
+        [nN]*) printf -- "Remove cancelled" ;;
+        *) exit ;;
+        esac
+        ;;
+    "azkaban")
+        # prompting for choice
+        read -p "Do you want to remove azkaban. (y)Yes/(n)No:- " choice
+        case $choice in
+        [yY]*) 
+            for host in ${workers[@]}; do
+                printf -- "${INFO}----- remove $host azkaban -----${END}\n"
+                ssh $host "rm -rf $AZKABAN_HOME"
+            done
+            ;;
+        [nN]*) printf -- "Remove cancelled" ;;
+        *) exit ;;
+        esac
+        ;;
+    "kafka")
+        # prompting for choice
+        read -p "Do you want to remove kafka. (y)Yes/(n)No:- " choice
+        case $choice in
+        [yY]*) 
+            for host in ${workers[@]}; do
+                printf -- "${INFO}----- remove $host kafka -----${END}\n"
+                ssh $host "rm -rf $KAFKA_HOME"
+                ssh $host "rm -rf $ZOOKEEPER_HOME"
+            done
+            ;;
+        [nN]*) printf -- "Remove cancelled" ;;
+        *) exit ;;
+        esac
         ;;
     "kettle")
-        for host in ${kettle_nodes[@]}; do
-            printf -- "${INFO}----- remove $host kettle -----${END}\n"
-            ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
-        done
+        # prompting for choice
+        read -p "Do you want to remove kettle. (y)Yes/(n)No:- " choice
+        case $choice in
+        [yY]*) 
+            for host in ${kettle_nodes[@]}; do
+                printf -- "${INFO}----- remove $host kettle -----${END}\n"
+                ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
+            done
+            ;;
+        [nN]*) printf -- "Remove cancelled" ;;
+        *) exit ;;
+        esac
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot remove { hadoop | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot remove { hadoop | azkaban | kafka | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
