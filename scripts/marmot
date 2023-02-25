@@ -26,16 +26,16 @@ IFS=',' read -ra kettle_nodes <<<$KETTLE_NODES
 if [ ${#@} -eq 0 ]; then
     if [ -d "$PROJECT_DIR" ]; then
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            printf -- "The hadoop has been installed.\n"
+            printf -- "${SUCCESS}The hadoop has been installed.${END}\n"
             printf -- "You can use it by command: ${BOLD}${NORMAL}marmot { start | status | stop } hadoop${END}\n"
             printf -- '\n'
         else
-            printf -- "The hadoop haven't been installed.\n"
+            printf -- "${WARN}The hadoop haven't been installed.${END}\n"
             printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
             printf -- '\n'
         fi
     else
-        printf -- "The project haven't been initialized.\n"
+        printf -- "${WARN}The project haven't been initialized.${END}\n"
         printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | azkaban | kafka | kettle }${END}\n"
         printf -- '\n'
     fi
@@ -78,19 +78,23 @@ install)
             printf -- '\n'
             printf -- '\n'
         else
-            printf -- "The hadoop haven't been installed. You should install it first.\n"
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
             printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
             printf -- '\n'
         fi
         ;;
     "kafka")
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            sh $SCRIPT_DIR/deploy-zookeeper.sh
+            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
+                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
+            else
+                sh $SCRIPT_DIR/deploy-zookeeper.sh
+            fi
             sh $SCRIPT_DIR/deploy-kafka.sh
             printf -- '\n'
             printf -- '\n'
         else
-            printf -- "The hadoop haven't been installed. You should install it first.\n"
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
             printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
             printf -- '\n'
         fi
@@ -294,7 +298,7 @@ remove)
                     ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
                 done
                 ;;
-            [nN]*) printf -- "Remove cancelled" ;;
+            [nN]*) printf -- "${WARN}Remove cancelled${END}" ;;
             *) exit ;;
             esac
         else
@@ -312,7 +316,7 @@ remove)
                     ssh $host "rm -rf $AZKABAN_HOME"
                 done
                 ;;
-            [nN]*) printf -- "Remove cancelled" ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}" ;;
             *) exit ;;
             esac
         else
@@ -331,7 +335,7 @@ remove)
                     ssh $host "rm -rf $ZOOKEEPER_HOME"
                 done
                 ;;
-            [nN]*) printf -- "Remove cancelled" ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}" ;;
             *) exit ;;
             esac
         else
@@ -349,7 +353,7 @@ remove)
                     ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
                 done
                 ;;
-            [nN]*) printf -- "Remove cancelled" ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}" ;;
             *) exit ;;
             esac
         else
