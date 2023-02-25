@@ -40,6 +40,7 @@ printf -- "${INFO}>>> Configure hadoop environment variables.${END}\n"
 if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
     cd $PROJECT_DIR/hadoop*
     HADOOP_PATH="HADOOP_HOME="$(pwd)
+    HADOOP_HOME=$(pwd)
     cd - >/dev/null 2>&1
 
     echo -e >>$MARMOT_PROFILE
@@ -245,6 +246,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop workers.${END}\n"
 
 for host in ${workers[@]}; do
+    cat /dev/null >$HADOOP_HOME/etc/hadoop/workers
     echo $host >>$HADOOP_HOME/etc/hadoop/workers
 done
 
