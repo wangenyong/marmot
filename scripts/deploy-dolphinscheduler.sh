@@ -22,7 +22,7 @@ IFS=',' read -ra dolphinscheduler_nodes <<<$DOLPHINSCHEDULER_NODES
 # loading zookeeper nodes
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 # loading hadoop nodes
-IFS=',' read -ra workers <<<$HADOOP_dolphinscheduler_workers
+IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 #############################################################################################
 # install dolphinscheduler
@@ -33,6 +33,29 @@ if [ -d $DOLPHINSCHEDULER_TMP_DIR ]; then
 fi
 mkdir $DOLPHINSCHEDULER_TMP_DIR
 pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.5-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
+
+
+#############################################################################################
+# configure dolphinscheduler database
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure dolphinscheduler database.${END}\n"
+
+mysql -uroot -p$MYSQL_ROOT_PASS -e "use dolphinscheduler"
+
+if [[ $? -ne 0 ]]; then
+    printf -- "${INFO}--> Create database dolphinscheduler.${END}\n"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE azkaban DEFAULT CHARSET utf8 COLLATE utf8_general_ci"
+
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON azkaban.* TO '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
+
+    printf -- "${SUCCESS}Configure dolphinscheduler database successful.${END}\n"
+else
+    printf -- "${SUCCESS}Database dolphinscheduler is complete.${END}\n"
+fi
+
 
 #############################################################################################
 # configure dolphinscheduler inftall conf file
@@ -71,7 +94,7 @@ done
 sed -i -r '/^ips/s|.*|ips='\"$DOLPHINSCHEDULER_NODES\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 
-sed -i -r '/^dolphinscheduler_workers/s|.*|dolphinscheduler_workers='\"${dolphinscheduler_workers}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^workers/s|.*|workers='\"${dolphinscheduler_workers}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^apiServers/s|.*|apiServers='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^pythonGatewayServers/s|(.*)|# \1|' $DOLPHINSCHEDULER_INSTALL_CONF
@@ -107,3 +130,15 @@ sed -i -r '/^defaultFS/s|.*|defaultFS="hdfs://'${workers[0]}':8020"|' $DOLPHINSC
 sed -i -r '/^yarnHaIps/s|.*|yarnHaIps=|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'${workers[1]}'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^hdfsRootUser/s|.*|hdfsRootUser="'$HADOOP_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
+
+
+#############################################################################################
+# init database
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Init dolphinscheduler database.${END}\n"
+
+# copy mysql driver
+cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
+# run init database script
+$DOLPHINSCHEDULER_TMP_DIR/script/create-dolphinscheduler.sh
