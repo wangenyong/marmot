@@ -245,8 +245,8 @@ fi
 printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop workers.${END}\n"
 
+cat /dev/null >$HADOOP_HOME/etc/hadoop/workers
 for host in ${workers[@]}; do
-    cat /dev/null >$HADOOP_HOME/etc/hadoop/workers
     echo $host >>$HADOOP_HOME/etc/hadoop/workers
 done
 
