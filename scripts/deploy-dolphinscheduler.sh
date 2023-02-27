@@ -33,29 +33,8 @@ if [ -d $DOLPHINSCHEDULER_TMP_DIR ]; then
 fi
 mkdir $DOLPHINSCHEDULER_TMP_DIR
 pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.5-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
-
-
-#############################################################################################
-# configure dolphinscheduler database
-#############################################################################################
-printf -- "\n"
-printf -- "${INFO}>>> Configure dolphinscheduler database.${END}\n"
-
-mysql -uroot -p$MYSQL_ROOT_PASS -e "use dolphinscheduler"
-
-if [[ $? -ne 0 ]]; then
-    printf -- "${INFO}--> Create database dolphinscheduler.${END}\n"
-    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE azkaban DEFAULT CHARSET utf8 COLLATE utf8_general_ci"
-
-    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
-    mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON azkaban.* TO '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
-    mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
-
-    printf -- "${SUCCESS}Configure dolphinscheduler database successful.${END}\n"
-else
-    printf -- "${SUCCESS}Database dolphinscheduler is complete.${END}\n"
-fi
-
+# copy mysql driver
+cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
 
 #############################################################################################
 # configure dolphinscheduler inftall conf file
@@ -88,6 +67,7 @@ for node in ${zookeeper_nodes[@]}; do
     fi
     let i+=1
 done
+
 # -------------------------------------------------------------------------------------------
 # install machine config
 # -------------------------------------------------------------------------------------------
@@ -131,14 +111,42 @@ sed -i -r '/^yarnHaIps/s|.*|yarnHaIps=|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'${workers[1]}'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^hdfsRootUser/s|.*|hdfsRootUser="'$HADOOP_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 
-
 #############################################################################################
-# init database
+# init dolphinscheduler database
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Init dolphinscheduler database.${END}\n"
 
-# copy mysql driver
-cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
-# run init database script
-$DOLPHINSCHEDULER_TMP_DIR/script/create-dolphinscheduler.sh
+mysql -uroot -p$MYSQL_ROOT_PASS -e "use dolphinscheduler"
+
+if [[ $? -ne 0 ]]; then
+    printf -- "${INFO}--> Create database dolphinscheduler.${END}\n"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE dolphinscheduler DEFAULT CHARSET utf8 COLLATE utf8_general_ci"
+
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "CREATE USER '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON dolphinscheduler.* TO '$MYSQL_DOLPHINSCHEDULER_USER'@'%' IDENTIFIED BY '$MYSQL_DOLPHINSCHEDULER_PASS'"
+    mysql -uroot -p$MYSQL_ROOT_PASS -e 'flush privileges'
+
+    # run init database script
+    $DOLPHINSCHEDULER_TMP_DIR/script/create-dolphinscheduler.sh
+
+    printf -- "${SUCCESS}Configure dolphinscheduler database successful.${END}\n"
+else
+    printf -- "${SUCCESS}Database dolphinscheduler is complete.${END}\n"
+fi
+
+#############################################################################################
+# deploy dolphinscheduler
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Deploy dolphinscheduler.${END}\n"
+
+cd $DOLPHINSCHEDULER_TMP_DIR
+./install.sh
+
+#############################################################################################
+# modify dolphinscheduler permissions
+#############################################################################################
+for node in ${dolphinscheduler_nodes[@]}; do
+    ssh $ADMIN_USER@$node "chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/dolphinscheduler"
+done
