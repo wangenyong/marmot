@@ -72,7 +72,7 @@ done
 # install machine config
 # -------------------------------------------------------------------------------------------
 sed -i -r '/^ips/s|.*|ips='\"$DOLPHINSCHEDULER_NODES\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[0]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 sed -i -r '/^workers/s|.*|workers='\"${dolphinscheduler_workers}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
@@ -110,6 +110,16 @@ sed -i -r '/^defaultFS/s|.*|defaultFS="hdfs://'${workers[0]}':8020"|' $DOLPHINSC
 sed -i -r '/^yarnHaIps/s|.*|yarnHaIps=|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'${workers[1]}'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^hdfsRootUser/s|.*|hdfsRootUser="'$HADOOP_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
+
+# -------------------------------------------------------------------------------------------
+# set registry.block.until.connected.wait
+# -------------------------------------------------------------------------------------------
+sed -i -r '/^registry\.block\.until\.connected\.wait/s|.*|registry\.block\.until\.connected\.wait=6000|' $DOLPHINSCHEDULER_TMP_DIR/conf/registry.properties
+
+# -------------------------------------------------------------------------------------------
+# modify install.sh
+# -------------------------------------------------------------------------------------------
+sed -i -r '$s|(.*)|# \1|' $DOLPHINSCHEDULER_TMP_DIR/install.sh
 
 #############################################################################################
 # init dolphinscheduler database

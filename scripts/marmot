@@ -332,7 +332,7 @@ remove)
         if [ $KAFKA_HOME ] && [ -d $AZKABAN_HOME ]; then
             printf -- "${WARN}Do you want to remove kafka.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
-            read -p " [y|Y]Yes/[n|N]No:- " choice
+            read choice
             case $choice in
             [yY]*)
                 for host in ${kafka_nodes[@]}; do
@@ -352,7 +352,7 @@ remove)
         if [ -d $PROJECT_DIR/dolphinscheduler ]; then
             printf -- "${WARN}Do you want to remove dolphinscheduler.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
-            read -p " [y|Y]Yes/[n|N]No:- " choice
+            read choice
             case $choice in
             [yY]*)
                 for host in ${dolphinscheduler_nodes[@]}; do
@@ -372,7 +372,7 @@ remove)
         if [ -d $PROJECT_DIR/data-integration ]; then
             printf -- "${WARN}Do you want to remove kettle.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
-            read -p " [y|Y]Yes/[n|N]No:- " choice
+            read choice
             case $choice in
             [yY]*)
                 for host in ${kettle_nodes[@]}; do
