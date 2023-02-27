@@ -145,7 +145,9 @@ sed -i -r '/^registry\.block\.until\.connected\.wait/s|.*|registry\.block\.until
 # -------------------------------------------------------------------------------------------
 # modify install.sh
 # -------------------------------------------------------------------------------------------
-sed -i -r '$s|(.*)|# \1|' $DOLPHINSCHEDULER_TMP_DIR/install.sh
+begin_line=$(sed -n '/^echo \"6.startup\"$/=' $DOLPHINSCHEDULER_TMP_DIR/install.sh)
+end_line=$(sed -n '$=' $DOLPHINSCHEDULER_TMP_DIR/install.sh)
+sed -i -r "${begin_line},${end_line}s|(.*)|# \1|" $DOLPHINSCHEDULER_TMP_DIR/install.sh
 
 #############################################################################################
 # init dolphinscheduler database
