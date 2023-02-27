@@ -18,7 +18,7 @@ source $HOME_DIR/conf/printf.conf
 # loading azkaban nodes
 IFS=',' read -ra azkaban_nodes <<<$AZKABAN_NODES
 
-AZKABAN_HOME=/opt/marmot/azkaban
+AZKABAN_HOME=$PROJECT_DIR/azkaban
 
 printf -- "${INFO}========== INSTALL AZKABAN ==========${END}\n"
 if [ -d $AZKABAN_HOME ]; then

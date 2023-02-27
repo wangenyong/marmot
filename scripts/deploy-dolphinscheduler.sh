@@ -24,6 +24,15 @@ IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 # loading hadoop nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
+DOLPHINSCHEDULER_HOME=$PROJECT_DIR/dolphinscheduler
+
+printf -- "${INFO}========== INSTALL DOLPHINSCHEDULER ==========${END}\n"
+if [ -d $AZKABAN_HOME ]; then
+    printf -- "${SUCCESS}========== DOLPHINSCHEDULER INSTALLED ==========${END}\n"
+    printf -- "\n"
+    exit 0
+fi
+
 #############################################################################################
 # install dolphinscheduler
 #############################################################################################
@@ -35,6 +44,24 @@ mkdir $DOLPHINSCHEDULER_TMP_DIR
 pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.5-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
 # copy mysql driver
 cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
+
+#############################################################################################
+# configure environment variables
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure dolphinscheduler environment variables.${END}\n"
+
+if [ $(grep -c "DOLPHINSCHEDULER_HOME" $MARMOT_PROFILE) -eq '0' ]; then
+    echo -e >>$MARMOT_PROFILE
+    echo '#***** DOLPHINSCHEDULER_HOME *****' >>$MARMOT_PROFILE
+    echo "export DOLPHINSCHEDULER_HOME="$DOLPHINSCHEDULER_HOME >>$MARMOT_PROFILE
+
+    source /etc/profile
+    printf -- "${SUCCESS}DOLPHINSCHEDULER_HOME configure successful: $DOLPHINSCHEDULER_HOME${END}\n"
+else
+    source /etc/profile
+    printf -- "${WARN}DOLPHINSCHEDULER_HOME configurtion is complete.${END}\n"
+fi
 
 #############################################################################################
 # configure dolphinscheduler inftall conf file
@@ -79,8 +106,7 @@ sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[2]}\"'|' $
 sed -i -r '/^apiServers/s|.*|apiServers='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^pythonGatewayServers/s|(.*)|# \1|' $DOLPHINSCHEDULER_INSTALL_CONF
 
-installPath=$PROJECT_DIR/dolphinscheduler
-sed -i -r '/^installPath/s|.*|installPath='\"$installPath\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^installPath/s|.*|installPath='\"$DOLPHINSCHEDULER_HOME\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^deployUser/s|.*|deployUser="root"|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 # -------------------------------------------------------------------------------------------
@@ -158,5 +184,8 @@ cd $DOLPHINSCHEDULER_TMP_DIR
 # modify dolphinscheduler permissions
 #############################################################################################
 for node in ${dolphinscheduler_nodes[@]}; do
-    ssh $ADMIN_USER@$node "chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/dolphinscheduler"
+    ssh $ADMIN_USER@$node "chown $HADOOP_USER:$HADOOP_USER -R $DOLPHINSCHEDULER_HOME"
 done
+
+printf -- "\n"
+printf -- "${SUCCESS}========== DOLPHINSCHEDULER INSTALL SUCCESSFUL ==========${END}\n"

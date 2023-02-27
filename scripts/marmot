@@ -100,6 +100,22 @@ install)
             printf -- '\n'
         fi
         ;;
+    "ds")
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
+                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
+            else
+                sh $SCRIPT_DIR/deploy-zookeeper.sh
+            fi
+            sh $SCRIPT_DIR/deploy-dolphinscheduler.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+        ;;
     "kettle")
         sh $SCRIPT_DIR/config-environment.sh $2
         printf -- '\n'
@@ -115,7 +131,7 @@ install)
         printf -- '\n'
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | kafka | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | kafka | ds | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -168,6 +184,10 @@ start)
             printf -- "${INFO}--> Start $host kafka.${END}\n"
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties"
         done
+        ;;
+    "ds")
+        printf -- "${INFO}========== START DOLPHINSCHEDULER ==========${END}\n"
+        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/start-all.sh"
         ;;
     "kettle")
         printf -- "${INFO}========== START KETTLE CLUSTERS ==========${END}\n"
@@ -229,6 +249,10 @@ stop)
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-stop.sh"
         done
         ;;
+    "ds")
+        printf -- "${INFO}========== STOP DOLPHINSCHEDULER ==========${END}\n"
+        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/stop-all.sh"
+        ;;
     "kettle")
         printf -- "${INFO}========== STOP KETTLE CLUSTERS ==========${END}\n"
         i=0
@@ -269,6 +293,10 @@ status)
         ;;
     "kafka")
         printf -- 'kafka status\n'
+        ;;
+    "ds")
+        printf -- "${INFO}========== DOLPHINSCHEDULER STATUS ==========${END}\n"
+        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/status-all.sh"
         ;;
     "kettle")
         printf -- "${INFO}========== KETTLE STATUS ==========${END}\n"
