@@ -27,7 +27,7 @@ IFS=',' read -ra workers <<<$HADOOP_WORKERS
 DOLPHINSCHEDULER_HOME=$PROJECT_DIR/dolphinscheduler
 
 printf -- "${INFO}========== INSTALL DOLPHINSCHEDULER ==========${END}\n"
-if [ -d $AZKABAN_HOME ]; then
+if [ -d $DOLPHINSCHEDULER_HOME ]; then
     printf -- "${SUCCESS}========== DOLPHINSCHEDULER INSTALLED ==========${END}\n"
     printf -- "\n"
     exit 0
