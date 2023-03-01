@@ -15,7 +15,7 @@
 * Hadoop `3.1.3`
 * Spark `3.0.0`
 * Hive `3.1.2`
-* Azkaban `3.84.4`
+* Dolphinscheduler `2.0.5`
 * Zookeeper `3.5.7`
 * Kettle `7.1.0`
 
@@ -187,7 +187,6 @@ cd marmot
 * HDFS NameNode: http://192.168.10.101:9870
 * YARN ResourceManager: http://192.168.10.102:8088
 * JobHistory: http://192.168.10.101:19888/jobhistory
-* Azkaban http://192.168.10.101:8081/
 * Dolphinscheduler http://192.168.10.103:12345/dolphinscheduler
 * Kettle master http://192.168.10.80:8080/
 * Kettle cluster01 http://192.168.10.81:8081/
