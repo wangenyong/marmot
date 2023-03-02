@@ -136,6 +136,7 @@ sed -i -r '/^defaultFS/s|.*|defaultFS="hdfs://'${workers[0]}':8020"|' $DOLPHINSC
 sed -i -r '/^yarnHaIps/s|.*|yarnHaIps=|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'${workers[1]}'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^hdfsRootUser/s|.*|hdfsRootUser="'$HADOOP_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^sudoEnable/s|.*|sudoEnable="false"|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 # -------------------------------------------------------------------------------------------
 # set registry.block.until.connected.wait
