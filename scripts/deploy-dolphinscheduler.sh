@@ -99,11 +99,11 @@ done
 # install machine config
 # -------------------------------------------------------------------------------------------
 sed -i -r '/^ips/s|.*|ips='\"$DOLPHINSCHEDULER_NODES\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[0]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 sed -i -r '/^workers/s|.*|workers='\"${dolphinscheduler_workers}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^apiServers/s|.*|apiServers='\"${dolphinscheduler_nodes[2]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^apiServers/s|.*|apiServers='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^pythonGatewayServers/s|(.*)|# \1|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 sed -i -r '/^installPath/s|.*|installPath='\"$DOLPHINSCHEDULER_HOME\"'|' $DOLPHINSCHEDULER_INSTALL_CONF

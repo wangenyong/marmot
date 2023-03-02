@@ -187,6 +187,6 @@ cd marmot
 * HDFS NameNode: http://192.168.10.101:9870
 * YARN ResourceManager: http://192.168.10.102:8088
 * JobHistory: http://192.168.10.101:19888/jobhistory
-* Dolphinscheduler http://192.168.10.103:12345/dolphinscheduler
+* Dolphinscheduler http://192.168.10.104:12345/dolphinscheduler
 * Kettle master http://192.168.10.80:8080/
 * Kettle cluster01 http://192.168.10.81:8081/
