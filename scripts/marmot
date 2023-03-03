@@ -317,7 +317,7 @@ status)
         ;;
     esac
     ;;
-remove)
+rm)
     case "$2" in
     "hadoop")
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
@@ -420,7 +420,7 @@ remove)
         fi
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot remove { hadoop | azkaban | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | azkaban | kafka | ds | kettle }${END}\n"
         printf -- '\n'
         ;;
     esac
