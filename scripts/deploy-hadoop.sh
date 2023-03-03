@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading environment
+source /etc/profile
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
@@ -59,6 +61,13 @@ else
 fi
 
 #############################################################################################
+# copy lzo jar
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Copy hadoop lzo jar file.${END}\n"
+cp $HOME_DIR/softwares/jars/hadoop-lzo-0.4.20.jar $HADOOP_HOME/share/hadoop/common
+
+#############################################################################################
 # configure core-site.xml
 #############################################################################################
 printf -- "\n"
@@ -97,6 +106,25 @@ USER_MARMOT_GROUPS='
         <value>*</value>\
     </property>'
 
+COMPRESSION_CONFIG='
+    <property>\
+        <name>io.compression.codecs</name>\
+        <value>\
+            org.apache.hadoop.io.compress.GzipCodec,\
+            org.apache.hadoop.io.compress.DefaultCodec,\
+            org.apache.hadoop.io.compress.BZip2Codec,\
+            org.apache.hadoop.io.compress.SnappyCodec,\
+            com.hadoop.compression.lzo.LzoCodec,\
+            com.hadoop.compression.lzo.LzopCodec\
+        </value>\
+    </property>'
+
+COMPRESSION_LZO_CONFIG='
+    <property>\
+        <name>io.compression.codec.lzo.class</name>\
+        <value>com.hadoop.compression.lzo.LzoCodec</value>\
+    </property>'
+
 CORE_SITE_FILE=$HADOOP_HOME/etc/hadoop/core-site.xml
 # determine whether the file core-site.xml is configured
 if [ $(grep -c "fs.defaultFS" $CORE_SITE_FILE) -eq '0' ]; then
@@ -105,6 +133,8 @@ if [ $(grep -c "fs.defaultFS" $CORE_SITE_FILE) -eq '0' ]; then
     sed -i -r '/<\/configuration>/i\'"$HDFS_USER_CONFIG" $CORE_SITE_FILE
     sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_HOSTS" $CORE_SITE_FILE
     sed -i -r '/<\/configuration>/i\'"$USER_MARMOT_GROUPS" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$COMPRESSION_CONFIG" $CORE_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$COMPRESSION_LZO_CONFIG" $CORE_SITE_FILE
     printf -- "${SUCCESS}Configure core-site.xml successful.${END}\n"
 else
     printf -- "${SUCCESS}File core-site.xml configurtion is complete.${END}\n"
