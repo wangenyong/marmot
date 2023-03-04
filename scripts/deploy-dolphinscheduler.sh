@@ -175,6 +175,26 @@ else
 fi
 
 #############################################################################################
+# configure dolphinscheduler_env.sh
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Configure dolphinscheduler_env.sh.${END}\n"
+
+DOLPHINSCHEDULER_ENV_FILE=$DOLPHINSCHEDULER_TMP_DIR/conf/env/dolphinscheduler_env.sh
+
+cat /dev/null >$DOLPHINSCHEDULER_ENV_FILE
+
+echo 'export HADOOP_HOME='$HADOOP_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export HADOOP_CONF_DIR='$HADOOP_HOME'/etc/hadoop' >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export SPARK_HOME='$SPARK_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export JAVA_HOME='$JAVA_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export HIVE_HOME='$HIVE_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export FLINK_HOME='$FLINK_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export SQOOP_HOME='$SQOOP_HOME >>$DOLPHINSCHEDULER_ENV_FILE
+echo 'export PATH=$HADOOP_HOME/bin:$SPARK_HOME/bin:$JAVA_HOME/bin:$HIVE_HOME/bin:$FLINK_HOME/bin:$SQOOP_HOME/bin:$PATH' >>$DOLPHINSCHEDULER_ENV_FILE
+    
+
+#############################################################################################
 # deploy dolphinscheduler
 #############################################################################################
 printf -- "\n"

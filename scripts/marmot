@@ -72,6 +72,9 @@ install)
         sh $SCRIPT_DIR/deploy-spark.sh
         printf -- '\n'
         printf -- '\n'
+        sh $SCRIPT_DIR/deploy-flink.sh
+        printf -- '\n'
+        printf -- '\n'
         sh $SCRIPT_DIR/deploy-sqoop.sh
         printf -- '\n'
         printf -- '\n'
