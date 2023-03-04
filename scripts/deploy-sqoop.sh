@@ -62,8 +62,9 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hive hive-site.xml.${END}\n"
 
 SQOOP_ENV_FILE=$SQOOP_HOME/conf/sqoop-env.sh
-# copy mysql driver
+# copy jdbc driver
 cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $SQOOP_HOME/lib/
+cp $HOME_DIR/softwares/jars/sqljdbc4.jar $SQOOP_HOME/lib/
 
 if [ ! -f $SQOOP_ENV_FILE ]; then
     mv $SQOOP_HOME/conf/sqoop-env-template.sh $SQOOP_ENV_FILE
@@ -77,12 +78,18 @@ else
 fi
 
 #############################################################################################
-# modify permissions
+# distributing sqoop
 #############################################################################################
 printf -- "\n"
-printf -- "${INFO}>>> Modify sqoop dir permissions.${END}\n"
+printf -- "${INFO}>>> Distributing sqoop to all cluster nodes.${END}\n"
 
+# modify permissions
 chown $HADOOP_USER:$HADOOP_USER -R $SQOOP_HOME
+# distributing hive
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS $SQOOP_HOME
+printf -- "\n"
+# distributing environment variables
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 
 printf -- "\n"
 printf -- "${SUCCESS}========== SQOOP INSTALL SUCCESSFUL ==========${END}\n"
