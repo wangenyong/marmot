@@ -85,7 +85,7 @@ printf -- "${INFO}>>> Distributing sqoop to all cluster nodes.${END}\n"
 
 # modify permissions
 chown $HADOOP_USER:$HADOOP_USER -R $SQOOP_HOME
-# distributing hive
+# distributing sqoop
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS $SQOOP_HOME
 printf -- "\n"
 # distributing environment variables

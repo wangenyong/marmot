@@ -52,8 +52,19 @@ else
     printf -- "${WARN}FLINK_HOME configurtion is complete.${END}\n"
 fi
 
+#############################################################################################
+# distributing flink
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Distributing flink to all cluster nodes.${END}\n"
+
 # modify permissions
 chown $HADOOP_USER:$HADOOP_USER -R $FLINK_HOME
+# distributing flink
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS $FLINK_HOME
+printf -- "\n"
+# distributing environment variables
+sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 
 printf -- "\n"
 printf -- "${SUCCESS}========== FLINK INSTALL SUCCESSFUL ==========${END}\n"
