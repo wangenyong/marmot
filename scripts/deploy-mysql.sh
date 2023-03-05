@@ -56,6 +56,20 @@ rpm -ivh $HOME_DIR/softwares/mysql/05_mysql-community-server-5.7.16-1.el7.x86_64
 printf -- "\n"
 printf -- "${INFO}>>> Configure mysql.${END}\n"
 
+if [ $(grep -c "character-set-server" /etc/my.cnf) -eq '0' ]; then
+    echo -e >>$MARMOT_PROFILE
+    echo '#***** CUSTOM_CONFIG *****' >>/etc/my.cnf
+    echo 'character-set-server=utf8' >>/etc/my.cnf
+    echo '[client]' >>/etc/my.cnf
+    echo 'default-character-set=utf8' >>/etc/my.cnf
+    echo '[mysql]' >>/etc/my.cnf
+    echo 'default-character-set=utf8' >>/etc/my.cnf
+
+    printf -- "${SUCCESS}/etc/my.cnf configure successful.${END}\n"
+else
+    printf -- "${WARN}/etc/my.cnf configurtion is complete.${END}\n"
+fi
+
 systemctl enable mysqld
 systemctl start mysqld
 

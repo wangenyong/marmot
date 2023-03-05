@@ -174,6 +174,14 @@ if [[ $? -ne 0 ]]; then
     printf -- "${INFO}--> Init database schema.${END}\n"
     schematool -initSchema -dbType mysql 1>/dev/null 2>&1
 
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table COLUMNS_V2 modify column COMMENT varchar(256) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table TABLE_PARAMS modify column PARAM_VALUE varchar(4000) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table PARTITION_PARAMS modify column PARAM_VALUE varchar(4000) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table PARTITION_KEYS modify column PKEY_COMMENT varchar(4000) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table PARTITION_KEY_VALS  modify column PART_KEY_VAL varchar(256) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e "alter table INDEX_PARAMS modify column PARAM_VALUE varchar(4000) character set utf8 COLLATE utf8_bin"
+    mysql -uroot -p$MYSQL_ROOT_PASS -D metastore -e 'alter table DBS modify column `DESC` varchar(4000) character set utf8 COLLATE utf8_unicode_ci'
+
     printf -- "${SUCCESS}Configure metastore successful.${END}\n"
 else
     printf -- "${SUCCESS}Database metastore is complete.${END}\n"
