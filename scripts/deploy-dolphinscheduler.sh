@@ -2,7 +2,7 @@
 
 #############################################################################################
 #
-# dolphinscheduler version "2.0.5"
+# dolphinscheduler version "2.0.8"
 #
 # configure dolphinscheduler
 #
