@@ -41,7 +41,7 @@ if [ -d $DOLPHINSCHEDULER_TMP_DIR ]; then
     rm -rf $DOLPHINSCHEDULER_TMP_DIR
 fi
 mkdir $DOLPHINSCHEDULER_TMP_DIR
-pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.5-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
+pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.8-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
 # copy mysql driver
 cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
 
