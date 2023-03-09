@@ -37,7 +37,7 @@ if [ ${#@} -eq 0 ]; then
         fi
     else
         printf -- "${WARN}The project haven't been initialized.${END}\n"
-        printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | azkaban | kafka | kettle }${END}\n"
+        printf -- "You can install it by command: ${BOLD}${NORMAL}marmot install { hadoop | ds | kafka }${END}\n"
         printf -- '\n'
     fi
     exit 0
