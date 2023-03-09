@@ -77,7 +77,7 @@ NAME_NODE_CONFIG='
     <!--namenode work address -->\
     <property>\
         <name>fs.defaultFS</name>\
-        <value>hdfs://'${workers[0]}':8020</value>\
+        <value>hdfs://'$HDFS_NAMENODE':8020</value>\
     </property>'
 
 DATA_DIR_CONFIG='
@@ -150,14 +150,14 @@ WEB_CONFIG='
     <!-- namenode web address-->\
 	<property>\
         <name>dfs.namenode.http-address</name>\
-        <value>'${workers[0]}':9870</value>\
+        <value>'$HDFS_NAMENODE':9870</value>\
     </property>'
 
 SECONDARY_WEB_CONFIG='
     <!-- secondary namemode web address-->\
     <property>\
         <name>dfs.namenode.secondary.http-address</name>\
-        <value>'${workers[2]}':9868</value>\
+        <value>'$HDFS_NAMENODE_SECONDARY':9868</value>\
     </property>'
 
 HDFS_SITE_FILE=$HADOOP_HOME/etc/hadoop/hdfs-site.xml
@@ -188,7 +188,7 @@ RM_HOSTNAME='
     <!-- resource_manager address-->\
     <property>\
         <name>yarn.resourcemanager.hostname</name>\
-        <value>'${workers[1]}'</value>\
+        <value>'$YARN_RM'</value>\
     </property>'
 
 ENV_CONFIG='
@@ -206,7 +206,7 @@ LOG_AGGREGATION_CONFIG='
 LOG_SERVER_CONFIG='
     <property>\
         <name>yarn.log.server.url</name>\
-        <value>'${workers[0]}':19888/jobhistory/logs</value>\
+        <value>'$HDFS_NAMENODE':19888/jobhistory/logs</value>\
     </property>'
 
 LOG_RETAIN_CONFIG='
@@ -247,14 +247,14 @@ HISTORY_ADDRESS_CONFIG='
     <!-- historyserver address -->\
     <property>\
         <name>mapreduce.jobhistory.address</name>\
-        <value>'${workers[0]}':10020</value>\
+        <value>'$HDFS_NAMENODE':10020</value>\
     </property>'
 
 HISTORY_WEB_CONFIG='
     <!-- historyserver web address -->\
     <property>\
         <name>mapreduce.jobhistory.webapp.address</name>\
-        <value>'${workers[0]}':19888</value>\
+        <value>'$HDFS_NAMENODE':19888</value>\
     </property>'
 
 MR_SITE_FILE=$HADOOP_HOME/etc/hadoop/mapred-site.xml
@@ -298,7 +298,7 @@ sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 #############################################################################################
 if [ ! -d $HADOOP_HOME/data ]; then
     printf -- "${INFO}>>> Format namenode.${END}\n"
-    ssh $HADOOP_USER@${workers[0]} "hdfs namenode -format 1>/dev/null 2>&1"
+    ssh $HADOOP_USER@$HDFS_NAMENODE "hdfs namenode -format 1>/dev/null 2>&1"
     if [ $? -eq 0 ]; then
         printf -- "${SUCCESS}Format namenode successful.${END}\n"
     else
