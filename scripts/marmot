@@ -79,9 +79,14 @@ install)
         printf -- '\n'
         printf -- '\n'
         ;;
-    "azkaban")
+    "ds")
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            sh $SCRIPT_DIR/deploy-azkaban.sh
+            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
+                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
+            else
+                sh $SCRIPT_DIR/deploy-zookeeper.sh
+            fi
+            sh $SCRIPT_DIR/deploy-dolphinscheduler.sh
             printf -- '\n'
             printf -- '\n'
         else
@@ -106,38 +111,8 @@ install)
             printf -- '\n'
         fi
         ;;
-    "ds")
-        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
-                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
-            else
-                sh $SCRIPT_DIR/deploy-zookeeper.sh
-            fi
-            sh $SCRIPT_DIR/deploy-dolphinscheduler.sh
-            printf -- '\n'
-            printf -- '\n'
-        else
-            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
-            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
-            printf -- '\n'
-        fi
-        ;;
-    "kettle")
-        sh $SCRIPT_DIR/config-environment.sh $2
-        printf -- '\n'
-        printf -- '\n'
-        sh $SCRIPT_DIR/deploy-jdk.sh $2
-        printf -- '\n'
-        printf -- '\n'
-        sh $SCRIPT_DIR/deploy-mysql.sh
-        printf -- '\n'
-        printf -- '\n'
-        sh $SCRIPT_DIR/deploy-kettle.sh
-        printf -- '\n'
-        printf -- '\n'
-        ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | azkaban | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -147,35 +122,22 @@ start)
     "hadoop")
         printf -- "${INFO}========== START HADOOP CLUSTERS ==========${END}\n"
         printf -- "${INFO}>>> Start hdfs.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/start-dfs.sh"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/sbin/start-dfs.sh"
         printf -- "${INFO}>>> Start yarn.${END}\n"
-        ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/start-yarn.sh"
+        ssh $HADOOP_USER@$YARN_RM "$HADOOP_HOME/sbin/start-yarn.sh"
         printf -- "${INFO}>>> Start hadoop historyserver.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon start historyserver"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/bin/mapred --daemon start historyserver"
         printf -- "${INFO}>>> Start hive.${END}\n"
         printf -- "${INFO}--> Start HiveMetastore.${END}\n"
         metapid=$(check_process HiveMetastore 9083)
-        cmd="ssh $HADOOP_USER@${workers[0]} nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
+        cmd="ssh $HADOOP_USER@$MYSQL_HOST nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
         [ -z "$metapid" ] && eval $cmd || printf -- "${WARN}Metastroe started.${END}\n"
         printf -- "${INFO}--> Start HiveServer2.${END}\n"
         server2pid=$(check_process HiveServer2 10000)
-        cmd="ssh $HADOOP_USER@${workers[0]} nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
+        cmd="ssh $HADOOP_USER@$MYSQL_HOST nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
         [ -z "$server2pid" ] && eval $cmd || printf -- "${WARN}Hiveserver2 started.${END}\n"
         printf -- "${INFO}>>> Start spark historyserver.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/start-history-server.sh"
-        ;;
-    "azkaban")
-        printf -- "${INFO}========== START AZKABAN ==========${END}\n"
-        printf -- "${INFO}>>> Start azkaban executor.${END}\n"
-        for host in ${azkaban_nodes[@]}; do
-            printf -- "${INFO}--> Start $host executor.${END}\n"
-            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/start-exec.sh"
-            sleep 5s
-            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; curl -G \"$host:\$(<./executor.port)/executor?action=activate\" && echo "
-        done
-        printf -- "\n"
-        printf -- "${INFO}>>> Start azkaban web server.${END}\n"
-        ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/start-web.sh"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$SPARK_HOME/sbin/start-history-server.sh"
         ;;
     "zk")
         printf -- "${INFO}========== START ZOOKEEPER ==========${END}\n"
@@ -184,6 +146,10 @@ start)
             ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh start"
         done
         ;;
+    "ds")
+        printf -- "${INFO}========== START DOLPHINSCHEDULER ==========${END}\n"
+        ssh $HADOOP_USER@$DOLPHINSCHEDULER_MASTER "$DOLPHINSCHEDULER_HOME/bin/start-all.sh"
+        ;;
     "kafka")
         printf -- "${INFO}========== START KAFKA ==========${END}\n"
         for host in ${kafka_nodes[@]}; do
@@ -191,22 +157,8 @@ start)
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties"
         done
         ;;
-    "ds")
-        printf -- "${INFO}========== START DOLPHINSCHEDULER ==========${END}\n"
-        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/start-all.sh"
-        ;;
-    "kettle")
-        printf -- "${INFO}========== START KETTLE CLUSTERS ==========${END}\n"
-        KETTLE_HOME=/opt/marmot/data-integration
-        i=0
-        for host in ${kettle_nodes[@]}; do
-            printf -- "${INFO}--> Start $host kettle.${END}\n"
-            ssh $KETTLE_USER@$host "nohup $KETTLE_HOME/carte.sh $host 808$i >$KETTLE_HOME/logs/kettle.log 2>&1 &"
-            let i+=1
-        done
-        ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | azkaban | zk | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -216,7 +168,7 @@ stop)
     "hadoop")
         printf -- "${INFO}========== STOP HADOOP CLUSTERS ==========${END}\n"
         printf -- "${INFO}>>> Stop spark historyserver.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$SPARK_HOME/sbin/stop-history-server.sh"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$SPARK_HOME/sbin/stop-history-server.sh"
         printf -- "${INFO}>>> Stop hive.${END}\n"
         printf -- "${INFO}--> Stop HiveMetastore.${END}\n"
         metapid=$(check_process HiveMetastore 9083)
@@ -225,21 +177,11 @@ stop)
         server2pid=$(check_process HiveServer2 10000)
         [ "$server2pid" ] && kill $server2pid || printf -- "${WARN}HiveServer2 have not started.${END}\n"
         printf -- "${INFO}>>> Stop hadoop historyserver.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/bin/mapred --daemon stop historyserver"
         printf -- "${INFO}>>> Stop yarn.${END}\n"
-        ssh $HADOOP_USER@${workers[1]} "$HADOOP_HOME/sbin/stop-yarn.sh"
+        ssh $HADOOP_USER@$YARN_RM "$HADOOP_HOME/sbin/stop-yarn.sh"
         printf -- "${INFO}>>> Stop hdfs.${END}\n"
-        ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/stop-dfs.sh"
-        ;;
-    "azkaban")
-        printf -- "${INFO}========== STOP AZKABAN ==========${END}\n"
-        printf -- "${INFO}>>> Stop azkaban web server.${END}\n"
-        ssh $HADOOP_USER@${azkaban_nodes[0]} "cd $AZKABAN_HOME/azkaban-web; bin/shutdown-web.sh"
-        printf -- "\n"
-        for host in ${azkaban_nodes[@]}; do
-            printf -- "${INFO}--> Stop $host executor.${END}\n"
-            ssh $HADOOP_USER@$host "cd $AZKABAN_HOME/azkaban-exec; bin/shutdown-exec.sh"
-        done
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/sbin/stop-dfs.sh"
         ;;
     "zk")
         printf -- "${INFO}========== STOP ZOOKEEPER ==========${END}\n"
@@ -248,6 +190,10 @@ stop)
             ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh stop"
         done
         ;;
+    "ds")
+        printf -- "${INFO}========== STOP DOLPHINSCHEDULER ==========${END}\n"
+        ssh $HADOOP_USER@$DOLPHINSCHEDULER_MASTER "$DOLPHINSCHEDULER_HOME/bin/stop-all.sh"
+        ;;
     "kafka")
         printf -- "${INFO}========== STOP KAFKA ==========${END}\n"
         for host in ${kafka_nodes[@]}; do
@@ -255,22 +201,8 @@ stop)
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-stop.sh"
         done
         ;;
-    "ds")
-        printf -- "${INFO}========== STOP DOLPHINSCHEDULER ==========${END}\n"
-        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/stop-all.sh"
-        ;;
-    "kettle")
-        printf -- "${INFO}========== STOP KETTLE CLUSTERS ==========${END}\n"
-        i=0
-        for host in ${kettle_nodes[@]}; do
-            printf -- "${INFO}--> Stop $host kettle.${END}\n"
-            cmd="fuser -k 808$i/tcp"
-            ssh $host $cmd
-            let i+=1
-        done
-        ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | azkaban | zk | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -287,9 +219,6 @@ status)
         check_process HiveMetastore 9083 >/dev/null && printf -- "${SUCCESS}HiveMetastore running normally.${END}\n" || printf -- "${WARN}HiveMetastore running abnormally.${END}\n"
         check_process HiveServer2 10000 >/dev/null && printf -- "${SUCCESS}HiveServer2 running normally${END}\n" || printf -- "${WARN}HiveServer2 running abnormally.${END}\n"
         ;;
-    "azkaban")
-        printf -- 'azkaban status\n'
-        ;;
     "zk")
         printf -- "${INFO}========== ZOOKEEPER STATUS ==========${END}\n"
         for host in ${zookeeper_nodes[@]}; do
@@ -297,25 +226,15 @@ status)
             ssh $HADOOP_USER@$host "$ZOOKEEPER_HOME/bin/zkServer.sh status"
         done
         ;;
+    "ds")
+        printf -- "${INFO}========== DOLPHINSCHEDULER STATUS ==========${END}\n"
+        ssh $HADOOP_USER@$DOLPHINSCHEDULER_MASTER "$DOLPHINSCHEDULER_HOME/bin/status-all.sh"
+        ;;
     "kafka")
         printf -- 'kafka status\n'
         ;;
-    "ds")
-        printf -- "${INFO}========== DOLPHINSCHEDULER STATUS ==========${END}\n"
-        ssh $HADOOP_USER@${dolphinscheduler_nodes[0]} "$DOLPHINSCHEDULER_HOME/bin/status-all.sh"
-        ;;
-    "kettle")
-        printf -- "${INFO}========== KETTLE STATUS ==========${END}\n"
-        i=0
-        for host in ${kettle_nodes[@]}; do
-            printf -- "${INFO}----- $host -----${END}\n"
-            cmd="netstat -nlp | grep 808$i"
-            ssh $host $cmd
-            let i+=1
-        done
-        ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | azkaban | zk | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -342,23 +261,23 @@ rm)
             printf -- '\n'
         fi
         ;;
-    "azkaban")
-        if [ $AZKABAN_HOME ] && [ -d $AZKABAN_HOME ]; then
-            printf -- "${WARN}Do you want to remove azkaban.${END}\n"
+    "ds")
+        if [ -d $PROJECT_DIR/dolphinscheduler ]; then
+            printf -- "${WARN}Do you want to remove dolphinscheduler.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
             read choice
             case $choice in
             [yY]*)
-                for host in ${azkaban_nodes[@]}; do
-                    printf -- "${INFO}----- remove $host azkaban -----${END}\n"
-                    ssh $host "rm -rf $AZKABAN_HOME"
+                for host in ${dolphinscheduler_nodes[@]}; do
+                    printf -- "${INFO}----- remove $host dolphinscheduler -----${END}\n"
+                    ssh $host "rm -rf $PROJECT_DIR/dolphinscheduler"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
             *) exit ;;
             esac
         else
-            printf -- "${WARN}The azkaban haven't been installed.${END}\n"
+            printf -- "${WARN}The kafka haven't been installed.${END}\n"
             printf -- '\n'
         fi
         ;;
@@ -382,48 +301,8 @@ rm)
             printf -- '\n'
         fi
         ;;
-    "ds")
-        if [ -d $PROJECT_DIR/dolphinscheduler ]; then
-            printf -- "${WARN}Do you want to remove dolphinscheduler.${END}\n"
-            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
-            read choice
-            case $choice in
-            [yY]*)
-                for host in ${dolphinscheduler_nodes[@]}; do
-                    printf -- "${INFO}----- remove $host dolphinscheduler -----${END}\n"
-                    ssh $host "rm -rf $PROJECT_DIR/dolphinscheduler"
-                done
-                ;;
-            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
-            *) exit ;;
-            esac
-        else
-            printf -- "${WARN}The kafka haven't been installed.${END}\n"
-            printf -- '\n'
-        fi
-        ;;
-    "kettle")
-        if [ -d $PROJECT_DIR/data-integration ]; then
-            printf -- "${WARN}Do you want to remove kettle.${END}\n"
-            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
-            read choice
-            case $choice in
-            [yY]*)
-                for host in ${kettle_nodes[@]}; do
-                    printf -- "${INFO}----- remove $host kettle -----${END}\n"
-                    ssh $host "rm -rf /opt/marmot/*; cat /dev/null >/etc/profile.d/marmot_env.sh"
-                done
-                ;;
-            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
-            *) exit ;;
-            esac
-        else
-            printf -- "${WARN}The kettle haven't been installed.${END}\n"
-            printf -- '\n'
-        fi
-        ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | azkaban | kafka | ds | kettle }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | ds | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
