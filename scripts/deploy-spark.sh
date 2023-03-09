@@ -105,7 +105,7 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Start hdfs.${END}\n"
-ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/start-dfs.sh"
+ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/sbin/start-dfs.sh"
 
 #############################################################################################
 # configure spark historyserver
@@ -116,18 +116,18 @@ printf -- "${INFO}>>> Configure spark historyserver.${END}\n"
 SPARK_DEFAULTS=$SPARK_HOME/conf/spark-defaults.conf
 if [ ! -f $SPARK_DEFAULTS ]; then
     # create hdfs directory
-    ssh $HADOOP_USER@${workers[0]} "hadoop fs -mkdir /directory"
+    ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -mkdir /directory"
 
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
-    echo "spark.eventLog.dir hdfs://${workers[0]}:8020/directory" >>$SPARK_DEFAULTS
-    echo "spark.yarn.historyServer.address=${workers[0]}:18080" >>$SPARK_DEFAULTS
+    echo "spark.eventLog.dir hdfs://$HDFS_NAMENODE:8020/directory" >>$SPARK_DEFAULTS
+    echo "spark.yarn.historyServer.address=$HDFS_NAMENODE:18080" >>$SPARK_DEFAULTS
     echo "spark.history.ui.port=18080" >>$SPARK_DEFAULTS
 
     SPARK_HISTORY_OPTS='
 export SPARK_HISTORY_OPTS="\
 -Dspark.history.ui.port=18080\
--Dspark.history.fs.logDirectory=hdfs://'${workers[0]}':8020/directory\
+-Dspark.history.fs.logDirectory=hdfs://'$HDFS_NAMENODE':8020/directory\
 -Dspark.history.retainedApplications=30"'
     sed -i -r '$a\'"$SPARK_HISTORY_OPTS" $SPARK_ENV
 
@@ -165,21 +165,21 @@ if [ ! -f $HIVE_SPARK_DEFAULT ]; then
     echo '#***** CUSTOM CONFIG *****' >>$HIVE_SPARK_DEFAULT
     echo "spark.master yarn" >>$HIVE_SPARK_DEFAULT
     echo "spark.eventLog.enabled true" >>$HIVE_SPARK_DEFAULT
-    echo "spark.eventLog.dir hdfs://${workers[0]}:8020/directory" >>$HIVE_SPARK_DEFAULT
+    echo "spark.eventLog.dir hdfs://$HDFS_NAMENODE:8020/directory" >>$HIVE_SPARK_DEFAULT
     echo "spark.executor.memory 1g" >>$HIVE_SPARK_DEFAULT
     echo "spark.driver.memory 1g" >>$HIVE_SPARK_DEFAULT
 
     # upload pure spark jars to hdfs
     pv $HOME_DIR/softwares/spark-3.0.0-bin-without-hadoop.tgz | tar -zx -C /home/$HADOOP_USER/
     chown $HADOOP_USER:$HADOOP_USER -R /home/$HADOOP_USER/
-    ssh $HADOOP_USER@${workers[0]} "hadoop fs -mkdir /spark-jars"
-    ssh $HADOOP_USER@${workers[0]} "hadoop fs -put ~/spark-3.0.0-bin-without-hadoop/jars/* /spark-jars 1>/dev/null 2>&1"
+    ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -mkdir /spark-jars"
+    ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -put ~/spark-3.0.0-bin-without-hadoop/jars/* /spark-jars 1>/dev/null 2>&1"
 
     SPARK_YAR_JARS='
     <!--spark dependency location-->\
     <property>\
         <name>spark.yarn.jars</name>\
-        <value>hdfs://'${workers[0]}':8020/spark-jars/*</value>\
+        <value>hdfs://'$HDFS_NAMENODE':8020/spark-jars/*</value>\
     </property>'
     HIVE_ENGINE='
     <property>\
@@ -208,7 +208,7 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Stop hdfs.${END}\n"
-ssh $HADOOP_USER@${workers[0]} "$HADOOP_HOME/sbin/stop-dfs.sh"
+ssh $HADOOP_USER@$HDFS_NAMENODE "$HADOOP_HOME/sbin/stop-dfs.sh"
 
 #############################################################################################
 # distributing spark

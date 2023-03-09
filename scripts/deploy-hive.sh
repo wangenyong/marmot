@@ -72,7 +72,7 @@ mv $HIVE_HOME/lib/log4j-slf4j-impl-2.10.0.jar $HIVE_HOME/lib/log4j-slf4j-impl-2.
 MYSQL_URL_CONFIG='
     <property>\
         <name>javax.jdo.option.ConnectionURL</name>\
-        <value>jdbc:mysql://'${workers[0]}':3306/metastore?useSSL=false</value>\
+        <value>jdbc:mysql://'$MYSQL_HOST':3306/metastore?useSSL=false</value>\
     </property>'
 
 MYSQL_DRIVER_NAME_CONFIG='
@@ -114,7 +114,7 @@ HIVE_THRIFT_PORT='
 HIVE_THRIFT_HOST='
     <property>\
         <name>hive.server2.thrift.bind.host</name>\
-        <value>'${workers[0]}'</value>\
+        <value>'$MYSQL_HOST'</value>\
     </property>'
 
 HIVE_API_AUTH='
@@ -138,7 +138,7 @@ HIVE_CLI_DB='
 HIVE_METASTORE_URIS='
     <property>\
         <name>hive.metastore.uris</name>\
-        <value>thrift://'${workers[0]}':9083</value>\
+        <value>thrift://'$MYSQL_HOST':9083</value>\
     </property>'
 
 sed -i -r '/<\/configuration>/i\'"$MYSQL_URL_CONFIG" $HIVE_SITE_FILE
