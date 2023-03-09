@@ -99,11 +99,11 @@ done
 # install machine config
 # -------------------------------------------------------------------------------------------
 sed -i -r '/^ips/s|.*|ips='\"$DOLPHINSCHEDULER_NODES\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^masters/s|.*|masters='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^masters/s|.*|masters='\"$DOLPHINSCHEDULER_MASTER\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 sed -i -r '/^workers/s|.*|workers='\"${dolphinscheduler_workers}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^alertServer/s|.*|alertServer='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^apiServers/s|.*|apiServers='\"${dolphinscheduler_nodes[3]}\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^alertServer/s|.*|alertServer='\"$DOLPHINSCHEDULER_ALERT_SERVER\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^apiServers/s|.*|apiServers='\"$DOLPHINSCHEDULER_API_SERVER\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^pythonGatewayServers/s|(.*)|# \1|' $DOLPHINSCHEDULER_INSTALL_CONF
 
 sed -i -r '/^installPath/s|.*|installPath='\"$DOLPHINSCHEDULER_HOME\"'|' $DOLPHINSCHEDULER_INSTALL_CONF
@@ -118,7 +118,7 @@ sed -i -r '/^javaHome/s|.*|javaHome='\"$JAVA_HOME\"'|' $DOLPHINSCHEDULER_INSTALL
 # database config
 # -------------------------------------------------------------------------------------------
 sed -i -r '/^DATABASE_TYPE/s|.*|DATABASE_TYPE="mysql"|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^SPRING_DATASOURCE_URL/s|.*|SPRING_DATASOURCE_URL="jdbc:mysql://'${workers[0]}':3306/dolphinscheduler?useUnicode=true\&characterEncoding=UTF-8"|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^SPRING_DATASOURCE_URL/s|.*|SPRING_DATASOURCE_URL="jdbc:mysql://'$MYSQL_HOST':3306/dolphinscheduler?useUnicode=true\&characterEncoding=UTF-8"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^SPRING_DATASOURCE_USERNAME/s|.*|SPRING_DATASOURCE_USERNAME="'$MYSQL_DOLPHINSCHEDULER_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^SPRING_DATASOURCE_PASSWORD/s|.*|SPRING_DATASOURCE_PASSWORD="'$MYSQL_DOLPHINSCHEDULER_PASS'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 
@@ -132,9 +132,9 @@ sed -i -r '/^registryNamespace/s|.*|registryNamespace="dolphinscheduler"|' $DOLP
 # dolphinscheduler_workers task server config
 # -------------------------------------------------------------------------------------------
 sed -i -r '/^resourceStorageType/s|.*|resourceStorageType="HDFS"|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^defaultFS/s|.*|defaultFS="hdfs://'${workers[0]}':8020"|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^defaultFS/s|.*|defaultFS="hdfs://'$HDFS_NAMENODE':8020"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^yarnHaIps/s|.*|yarnHaIps=|' $DOLPHINSCHEDULER_INSTALL_CONF
-sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'${workers[1]}'"|' $DOLPHINSCHEDULER_INSTALL_CONF
+sed -i -r '/^singleYarnIp/s|.*|singleYarnIp="'$YARN_RM'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^hdfsRootUser/s|.*|hdfsRootUser="'$HADOOP_USER'"|' $DOLPHINSCHEDULER_INSTALL_CONF
 sed -i -r '/^sudoEnable/s|.*|sudoEnable="false"|' $DOLPHINSCHEDULER_INSTALL_CONF
 
