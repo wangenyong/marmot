@@ -205,3 +205,4 @@ cd marmot
 * JobHistory: http://192.168.10.101:19888/jobhistory
 * Dolphinscheduler http://192.168.10.104:12345/dolphinscheduler
 * Hbase http://192.168.10.101:16010
+* Solr http://192.168.10.101:8983

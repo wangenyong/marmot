@@ -118,6 +118,17 @@ install)
             printf -- '\n'
         fi
         ;;
+    "solr")
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-solr.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | hbase | kafka }${END}\n"
         printf -- '\n'
@@ -168,6 +179,10 @@ start)
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties"
         done
         ;;
+    "solr")
+        printf -- "${INFO}========== START SOLR ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$SOLR_HOME/bin/solr start"
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka }${END}\n"
         printf -- '\n'
@@ -215,6 +230,10 @@ stop)
             printf -- "${INFO}--> Stop $host kafka.${END}\n"
             ssh $HADOOP_USER@$host "$KAFKA_HOME/bin/kafka-server-stop.sh"
         done
+        ;;
+    "solr")
+        printf -- "${INFO}========== STOP SOLR ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$SOLR_HOME/bin/solr stop"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka }${END}\n"
@@ -326,6 +345,26 @@ rm)
                 for host in ${kafka_nodes[@]}; do
                     printf -- "${INFO}----- remove $host kafka -----${END}\n"
                     ssh $host "rm -rf $KAFKA_HOME"
+                done
+                ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
+            *) exit ;;
+            esac
+        else
+            printf -- "${WARN}The kafka haven't been installed.${END}\n"
+            printf -- '\n'
+        fi
+        ;;
+    "solr")
+        if [ $SOLR_HOME ] && [ -d $SOLR_HOME ]; then
+            printf -- "${WARN}Do you want to remove solr.${END}\n"
+            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
+            read choice
+            case $choice in
+            [yY]*)
+                for host in ${workers[@]}; do
+                    printf -- "${INFO}----- remove $host solr -----${END}\n"
+                    ssh $host "rm -rf $SOLR_HOME"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
