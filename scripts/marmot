@@ -78,6 +78,9 @@ install)
         sh $SCRIPT_DIR/deploy-sqoop.sh
         printf -- '\n'
         printf -- '\n'
+        sh $SCRIPT_DIR/deploy-datax.sh
+        printf -- '\n'
+        printf -- '\n'
         sh $SCRIPT_DIR/deploy-zookeeper.sh
         printf -- '\n'
         printf -- '\n'
