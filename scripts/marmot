@@ -78,15 +78,24 @@ install)
         sh $SCRIPT_DIR/deploy-sqoop.sh
         printf -- '\n'
         printf -- '\n'
+        sh $SCRIPT_DIR/deploy-zookeeper.sh
+        printf -- '\n'
+        printf -- '\n'
         ;;
     "ds")
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
-                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
-            else
-                sh $SCRIPT_DIR/deploy-zookeeper.sh
-            fi
             sh $SCRIPT_DIR/deploy-dolphinscheduler.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+        ;;
+    "hbase")
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-hbase.sh
             printf -- '\n'
             printf -- '\n'
         else
@@ -97,11 +106,6 @@ install)
         ;;
     "kafka")
         if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
-            if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
-                printf -- "${SUCCESS}The zookeeper has been installed.${END}\n"
-            else
-                sh $SCRIPT_DIR/deploy-zookeeper.sh
-            fi
             sh $SCRIPT_DIR/deploy-kafka.sh
             printf -- '\n'
             printf -- '\n'
@@ -112,7 +116,7 @@ install)
         fi
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | hbase | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -150,6 +154,10 @@ start)
         printf -- "${INFO}========== START DOLPHINSCHEDULER ==========${END}\n"
         ssh $HADOOP_USER@$DOLPHINSCHEDULER_MASTER "$DOLPHINSCHEDULER_HOME/bin/start-all.sh"
         ;;
+    "hbase")
+        printf -- "${INFO}========== START HBASE ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HBASE_HOME/bin/start-hbase.sh"
+        ;;
     "kafka")
         printf -- "${INFO}========== START KAFKA ==========${END}\n"
         for host in ${kafka_nodes[@]}; do
@@ -158,7 +166,7 @@ start)
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -194,6 +202,10 @@ stop)
         printf -- "${INFO}========== STOP DOLPHINSCHEDULER ==========${END}\n"
         ssh $HADOOP_USER@$DOLPHINSCHEDULER_MASTER "$DOLPHINSCHEDULER_HOME/bin/stop-all.sh"
         ;;
+    "hbase")
+        printf -- "${INFO}========== STOP HBASE ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$HBASE_HOME/bin/stop-hbase.sh"
+        ;;
     "kafka")
         printf -- "${INFO}========== STOP KAFKA ==========${END}\n"
         for host in ${kafka_nodes[@]}; do
@@ -202,7 +214,7 @@ stop)
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -281,8 +293,28 @@ rm)
             printf -- '\n'
         fi
         ;;
+    "hbase")
+        if [ $HBASE_HOME ] && [ -d $HBASE_HOME ]; then
+            printf -- "${WARN}Do you want to remove hbase.${END}\n"
+            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
+            read choice
+            case $choice in
+            [yY]*)
+                for host in ${workers[@]}; do
+                    printf -- "${INFO}----- remove $host hbase -----${END}\n"
+                    ssh $host "rm -rf $HBASE_HOME"
+                done
+                ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
+            *) exit ;;
+            esac
+        else
+            printf -- "${WARN}The hbase haven't been installed.${END}\n"
+            printf -- '\n'
+        fi
+        ;;
     "kafka")
-        if [ $KAFKA_HOME ] && [ -d $AZKABAN_HOME ]; then
+        if [ $KAFKA_HOME ] && [ -d $KAFKA_HOME ]; then
             printf -- "${WARN}Do you want to remove kafka.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
             read choice
@@ -302,7 +334,7 @@ rm)
         fi
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | ds | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | ds | hbase | kafka }${END}\n"
         printf -- '\n'
         ;;
     esac

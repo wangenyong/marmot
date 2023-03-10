@@ -260,9 +260,9 @@ HISTORY_WEB_CONFIG='
 MR_SITE_FILE=$HADOOP_HOME/etc/hadoop/mapred-site.xml
 # determine whether the file mapred-site.xml is configured
 if [ $(grep -c "mapreduce.framework.name" $MR_SITE_FILE) -eq '0' ]; then
-    sed -in '/<\/configuration>/i\'"$MR_YARN_CONFIG" $MR_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$HISTORY_ADDRESS_CONFIG" $MR_SITE_FILE
-    sed -in '/<\/configuration>/i\'"$HISTORY_WEB_CONFIG" $MR_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$MR_YARN_CONFIG" $MR_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$HISTORY_ADDRESS_CONFIG" $MR_SITE_FILE
+    sed -i -r '/<\/configuration>/i\'"$HISTORY_WEB_CONFIG" $MR_SITE_FILE
 
     printf -- "${SUCCESS}Configure mapred-site.xml successful.${END}\n"
 else
