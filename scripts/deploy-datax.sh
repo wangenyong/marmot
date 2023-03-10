@@ -42,7 +42,7 @@ if [ $(grep -c "DATAX_HOME" $MARMOT_PROFILE) -eq '0' ]; then
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** DATAX_HOME *****' >>$MARMOT_PROFILE
-    echo "export "$mDATAX_PATH >>$MARMOT_PROFILE
+    echo "export "$DATAX_PATH >>$MARMOT_PROFILE
 
     source /etc/profile
     printf -- "${SUCCESS}DATAX_HOME configure successful: $DATAX_HOME${END}\n"
@@ -59,7 +59,7 @@ printf -- "${INFO}>>> Distributing datax to all cluster nodes.${END}\n"
 
 # modify permissions
 chown $HADOOP_USER:$HADOOP_USER -R $DATAX_HOME
-# distributing hive
+# distributing datax
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS $DATAX_HOME
 printf -- "\n"
 # distributing environment variables
