@@ -92,7 +92,7 @@ CLUSTER_DISTRIBUTED='
         <value>true</value>\
     </property>'
 
-TMP_DIR=' 
+TMP_DIR='
     <property>\
         <name>hbase.tmp.dir</name>\
         <value>./tmp</value>\
