@@ -150,10 +150,12 @@ done
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Create operation user.${END}\n"
-cmd="useradd $NORMAL_USER; echo '$NORMAL_PASS' | passwd $NORMAL_USER --stdin"
+cmd1="useradd $NORMAL_USER; echo '$NORMAL_PASS' | passwd $NORMAL_USER --stdin"
+cmd2="useradd $SOLR_USER; echo '$SOLR_PASS' | passwd $SOLR_USER --stdin"
 for host in $HOST_LIST; do
     printf -- "${INFO}----- $host -----${END}\n"
-    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd1
+    sshpass -p $ADMIN_PASS ssh $ADMIN_USER@$host $cmd2
 done
 
 #############################################################################################
@@ -197,16 +199,22 @@ for host in $HOST_LIST; do
     sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_rm
     sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_gen
     sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_cat >>$NORMAL_USER-authorized_keys
+    sshpass -p $SOLR_PASS ssh $SOLR_USER@$host $cmd_rm
+    sshpass -p $SOLR_PASS ssh $SOLR_USER@$host $cmd_gen
+    sshpass -p $SOLR_PASS ssh $SOLR_USER@$host $cmd_cat >>$NORMAL_USER-authorized_keys
 done
 printf -- "${SUCCESS}All public keys copied to localhost.${END}\n"
 printf -- "\n"
 printf -- "${INFO}>>> Distributing all public keys.${END}\n"
-cmd_chmod="chmod 600 /home/$NORMAL_USER/.ssh/authorized_keys"
+cmd_chmod1="chmod 600 /home/$NORMAL_USER/.ssh/authorized_keys"
+cmd_chmod2="chmod 600 /home/$SOLR_USER/.ssh/authorized_keys"
 for host in $HOST_LIST; do
     printf -- "${INFO}----- $host -----${END}\n"
     sshpass -p $ADMIN_PASS scp $NORMAL_USER-authorized_keys $ADMIN_USER@$host:~/.ssh/authorized_keys
     sshpass -p $NORMAL_PASS scp $NORMAL_USER-authorized_keys $NORMAL_USER@$host:/home/$NORMAL_USER/.ssh/authorized_keys
-    sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_chmod
+    sshpass -p $SOLR_PASS scp $NORMAL_USER-authorized_keys $SOLR_USER@$host:/home/$SOLR_USER/.ssh/authorized_keys
+    sshpass -p $NORMAL_PASS ssh $NORMAL_USER@$host $cmd_chmod1
+    sshpass -p $SOLR_PASS ssh $SOLR_USER@$host $cmd_chmod2
 done
 printf -- "${SUCCESS}All public keys copied to cluster.${END}\n"
 

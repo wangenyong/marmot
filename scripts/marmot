@@ -181,7 +181,10 @@ start)
         ;;
     "solr")
         printf -- "${INFO}========== START SOLR ==========${END}\n"
-        ssh $HADOOP_USER@$HDFS_NAMENODE "$SOLR_HOME/bin/solr start"
+        for host in ${workers[@]}; do
+            printf -- "${INFO}--> Start $host solr.${END}\n"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr start -cloud -p 8983"
+        done
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka }${END}\n"
@@ -233,7 +236,10 @@ stop)
         ;;
     "solr")
         printf -- "${INFO}========== STOP SOLR ==========${END}\n"
-        ssh $HADOOP_USER@$HDFS_NAMENODE "$SOLR_HOME/bin/solr stop"
+        for host in ${workers[@]}; do
+            printf -- "${INFO}--> Stop $host solr.${END}\n"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr stop -all"
+        done
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka }${END}\n"
@@ -267,6 +273,13 @@ status)
     "kafka")
         printf -- 'kafka status\n'
         ;;
+    "solr")
+        printf -- "${INFO}========== SOLR STATUS ==========${END}\n"
+        for host in ${workers[@]}; do
+            printf -- "${INFO}----- $host -----${END}\n"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr status"
+        done
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka }${END}\n"
         printf -- '\n'
@@ -292,6 +305,26 @@ rm)
             esac
         else
             printf -- "${WARN}The hadoop haven't been installed.${END}\n"
+            printf -- '\n'
+        fi
+        ;;
+    "zk")
+        if [ $ZOOKEEPER_HOME ] && [ -d $ZOOKEEPER_HOME ]; then
+            printf -- "${WARN}Do you want to remove zookeeper.${END}\n"
+            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
+            read choice
+            case $choice in
+            [yY]*)
+                for host in ${zookeeper_nodes[@]}; do
+                    printf -- "${INFO}----- remove $host zookeeper -----${END}\n"
+                    ssh $host "rm -rf $ZOOKEEPER_HOME"
+                done
+                ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
+            *) exit ;;
+            esac
+        else
+            printf -- "${WARN}The kafka haven't been installed.${END}\n"
             printf -- '\n'
         fi
         ;;
