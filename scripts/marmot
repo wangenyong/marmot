@@ -183,11 +183,11 @@ start)
         printf -- "${INFO}========== START SOLR ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}--> Start $host solr.${END}\n"
-            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr start -cloud -p 8983"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr start"
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -238,11 +238,11 @@ stop)
         printf -- "${INFO}========== STOP SOLR ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}--> Stop $host solr.${END}\n"
-            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr stop -all"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr stop"
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -281,7 +281,7 @@ status)
         done
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka | solr }${END}\n"
         printf -- '\n'
         ;;
     esac
@@ -389,7 +389,7 @@ rm)
         fi
         ;;
     "solr")
-        if [ $SOLR_HOME ] && [ -d $SOLR_HOME ]; then
+        if [ -d $PROJECT_DIR/solr ]; then
             printf -- "${WARN}Do you want to remove solr.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
             read choice
@@ -397,19 +397,19 @@ rm)
             [yY]*)
                 for host in ${workers[@]}; do
                     printf -- "${INFO}----- remove $host solr -----${END}\n"
-                    ssh $host "rm -rf $SOLR_HOME"
+                    ssh $host "rm -rf $PROJECT_DIR/solr"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
             *) exit ;;
             esac
         else
-            printf -- "${WARN}The kafka haven't been installed.${END}\n"
+            printf -- "${WARN}The solr haven't been installed.${END}\n"
             printf -- '\n'
         fi
         ;;
     *)
-        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | ds | hbase | kafka }${END}\n"
+        printf -- "${BOLD}USAGE: ${NORMAL}marmot rm { hadoop | ds | hbase | kafka | solr }${END}\n"
         printf -- '\n'
         ;;
     esac

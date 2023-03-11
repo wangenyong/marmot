@@ -82,6 +82,9 @@ if [ ! -d "$ZOOKEEPER_HOME/data" ]; then
         ssh $HADOOP_USER@$node "echo $i >>$ZOOKEEPER_HOME/data/myid"
         let i+=1
     done
+    # adapt to solr
+    echo "4lw.commands.whitelist=mntr,conf,ruok" >>$ZOOKEEPER_HOME/conf/zoo.cfg
+
     # distributing zookeeper config file
     sh $SCRIPT_DIR/msync $ZOOKEEPER_NODES $ZOOKEEPER_HOME/conf/zoo.cfg
     

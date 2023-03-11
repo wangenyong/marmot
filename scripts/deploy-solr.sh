@@ -32,36 +32,14 @@ fi
 #############################################################################################
 printf -- "${INFO}>>> Install solr.${END}\n"
 pv $HOME_DIR/softwares/solr-8.11.2.tgz | tar -zx -C $PROJECT_DIR/
+# modify directory name
 mv $PROJECT_DIR/solr* $PROJECT_DIR/solr
-#############################################################################################
-# configure environment variables
-#############################################################################################
-# printf -- "\n"
-# printf -- "${INFO}>>> Configure solr environment variables.${END}\n"
-
-# if [ $(grep -c "SOLR_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-#    cd $PROJECT_DIR/solr*
-#    SOLR_PATH="SOLR_HOME="$(pwd)
-#    cd - >/dev/null 2>&1
-#
-#    echo -e >>$MARMOT_PROFILE
-#    echo '#***** SOLR_HOME *****' >>$MARMOT_PROFILE
-#    echo "export "$SOLR_PATH >>$MARMOT_PROFILE
-#
-#    source /etc/profile
-#    printf -- "${SUCCESS}SOLR_HOME configure successful: $SOLR_HOME${END}\n"
-#else
-#    source /etc/profile
-#    printf -- "${WARN}SOLR_HOME configurtion is complete.${END}\n"
-# fi
 
 #############################################################################################
 # configure solr
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Configure solr solr.in.sh.${END}\n"
-
-# cp $SOLR_HOME/server/solr/solr.xml $SOLR_HOME
 
 i=1
 zookeeper_servers=""
@@ -76,7 +54,6 @@ for node in ${zookeeper_nodes[@]}; do
 done
 
 sed -i -r '/^#ZK_HOST/s|.*|ZK_HOST="'$zookeeper_servers'"|' $PROJECT_DIR/solr/bin/solr.in.sh
-# sed -i -r '/^RUNAS/s|.*|RUNAS="'$HADOOP_USER'"|' $SOLR_HOME/bin/init.d/solr
 
 #############################################################################################
 # distributing solr
@@ -88,9 +65,6 @@ printf -- "${INFO}>>> Distributing solr to all cluster nodes.${END}\n"
 chown $SOLR_USER:$SOLR_USER -R $PROJECT_DIR/solr
 # distributing hive
 sh $SCRIPT_DIR/msync $HADOOP_WORKERS $PROJECT_DIR/solr
-printf -- "\n"
-# distributing environment variables
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
 
 printf -- "\n"
 printf -- "${SUCCESS}========== SOLR INSTALL SUCCESSFUL ==========${END}\n"
