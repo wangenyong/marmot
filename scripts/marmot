@@ -218,7 +218,7 @@ start)
         ;;
     "atlas")
         printf -- "${INFO}========== START ATLAS ==========${END}\n"
-        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas/bin/atlas_start.py"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas-${atlas_version}/bin/atlas_start.py"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
@@ -276,7 +276,7 @@ stop)
         ;;
     "atlas")
         printf -- "${INFO}========== STOP ATLAS ==========${END}\n"
-        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas/bin/atlas_stop.py"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas-${atlas_version}/bin/atlas_stop.py"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
@@ -374,7 +374,7 @@ rm)
             [yY]*)
                 for host in ${dolphinscheduler_nodes[@]}; do
                     printf -- "${INFO}----- remove $host dolphinscheduler -----${END}\n"
-                    ssh $host "rm -rf $PROJECT_DIR/dolphinscheduler"
+                    ssh $host "rm -rf $DOLPHINSCHEDULER_HOME"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
@@ -434,7 +434,7 @@ rm)
             [yY]*)
                 for host in ${workers[@]}; do
                     printf -- "${INFO}----- remove $host solr -----${END}\n"
-                    ssh $host "rm -rf $PROJECT_DIR/solr"
+                    ssh $host "rm -rf $PROJECT_DIR/solr-${solr_version}"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
@@ -454,7 +454,7 @@ rm)
             [yY]*)
                 for host in ${workers[@]}; do
                     printf -- "${INFO}----- remove $host atlas -----${END}\n"
-                    ssh $host "rm -rf $PROJECT_DIR/atlas"
+                    ssh $host "rm -rf $PROJECT_DIR/atlas-${atlas_version}"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
