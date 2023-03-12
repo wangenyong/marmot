@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading environment
 source /etc/profile
 
@@ -30,7 +32,8 @@ fi
 #############################################################################################
 printf -- "${INFO}>>> Install sqoop.${END}\n"
 
-pv $HOME_DIR/softwares/sqoop-1.4.6.bin__hadoop-2.0.4-alpha.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/etl/sqoop-${sqoop_version}.*.tar.gz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/sqoop* $PROJECT_DIR/sqoop-${sqoop_version}
 
 #############################################################################################
 # configure environment variables
@@ -39,9 +42,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure sqoop environment variables.${END}\n"
 
 if [ $(grep -c "SQOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/sqoop*
-    SQOOP_PATH="SQOOP_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    SQOOP_PATH="SQOOP_HOME="$PROJECT_DIR/sqoop-${sqoop_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** SQOOP_HOME *****' >>$MARMOT_PROFILE

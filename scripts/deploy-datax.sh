@@ -15,11 +15,13 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 printf -- "${INFO}========== INSTALL DATAX ==========${END}\n"
-if [ -d $PROJECT_DIR/datax ]; then
+if [ -d $PROJECT_DIR/datax* ]; then
     printf -- "${SUCCESS}========== DATAX INSTALLED ==========${END}\n"
     printf -- "\n"
     exit 0
@@ -29,7 +31,8 @@ fi
 # install datax
 #############################################################################################
 printf -- "${INFO}>>> Install datax.${END}\n"
-pv $HOME_DIR/softwares/datax.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/etl/datax.tar.gz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/datax $PROJECT_DIR/datax-${datax_version}
 
 #############################################################################################
 # configure environment variables
@@ -38,7 +41,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure datax environment variables.${END}\n"
 
 if [ $(grep -c "DATAX_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    DATAX_PATH="DATAX_HOME="$PROJECT_DIR/datax
+    DATAX_PATH="DATAX_HOME="$PROJECT_DIR/datax-${datax_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** DATAX_HOME *****' >>$MARMOT_PROFILE
