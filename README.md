@@ -206,3 +206,4 @@ cd marmot
 * Dolphinscheduler http://192.168.10.104:12345/dolphinscheduler
 * Hbase http://192.168.10.101:16010
 * Solr http://192.168.10.101:8983
+* Atlas http://192.168.10.101:21000

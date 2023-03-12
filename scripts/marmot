@@ -129,6 +129,17 @@ install)
             printf -- '\n'
         fi
         ;;
+    "atlas")
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-atlas.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | hbase | kafka }${END}\n"
         printf -- '\n'
@@ -186,6 +197,10 @@ start)
             ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr start"
         done
         ;;
+    "atlas")
+        printf -- "${INFO}========== START ATLAS ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas/bin/atlas_start.py"
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
         printf -- '\n'
@@ -240,6 +255,10 @@ stop)
             printf -- "${INFO}--> Stop $host solr.${END}\n"
             ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr stop"
         done
+        ;;
+    "atlas")
+        printf -- "${INFO}========== STOP ATLAS ==========${END}\n"
+        ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas/bin/atlas_stop.py"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
@@ -398,6 +417,26 @@ rm)
                 for host in ${workers[@]}; do
                     printf -- "${INFO}----- remove $host solr -----${END}\n"
                     ssh $host "rm -rf $PROJECT_DIR/solr"
+                done
+                ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
+            *) exit ;;
+            esac
+        else
+            printf -- "${WARN}The solr haven't been installed.${END}\n"
+            printf -- '\n'
+        fi
+        ;;
+    "atlas")
+        if [ -d $PROJECT_DIR/atlas ]; then
+            printf -- "${WARN}Do you want to remove atlas.${END}\n"
+            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
+            read choice
+            case $choice in
+            [yY]*)
+                for host in ${workers[@]}; do
+                    printf -- "${INFO}----- remove $host atlas -----${END}\n"
+                    ssh $host "rm -rf $PROJECT_DIR/atlas"
                 done
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
