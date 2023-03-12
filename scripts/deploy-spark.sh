@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
@@ -30,7 +32,8 @@ fi
 #############################################################################################
 printf -- "${INFO}>>> Install spark.${END}\n"
 
-pv $HOME_DIR/softwares/spark-3.0.0-bin-hadoop3.2.tgz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hadoop/spark-${spark_version}-bin-hadoop3.2.tgz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/spark* $PROJECT_DIR/spark-${spark_version}
 
 #############################################################################################
 # configure environment variables
@@ -39,9 +42,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure spark environment variables.${END}\n"
 
 if [ $(grep -c "SPARK_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/spark*
-    SPARK_PATH="SPARK_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    SPARK_PATH="SPARK_HOME="$PROJECT_DIR/spark-${spark_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** SPARK_HOME *****' >>$MARMOT_PROFILE
@@ -121,7 +122,7 @@ if [ ! -f $SPARK_DEFAULTS ]; then
     echo '#***** CUSTOM CONFIG *****' >>$SPARK_DEFAULTS
     echo "spark.eventLog.enabled true" >>$SPARK_DEFAULTS
     echo "spark.eventLog.dir hdfs://$HDFS_NAMENODE:8020/directory" >>$SPARK_DEFAULTS
-    echo "spark.yarn.historyServer.address=$HDFS_NAMENODE:18080" >>$SPARK_DEFAULTS
+    echo "spark.yarn.historyServer.address=$SPARK_HISTORY_SERVER:18080" >>$SPARK_DEFAULTS
     echo "spark.history.ui.port=18080" >>$SPARK_DEFAULTS
 
     SPARK_HISTORY_OPTS='
@@ -170,10 +171,10 @@ if [ ! -f $HIVE_SPARK_DEFAULT ]; then
     echo "spark.driver.memory 1g" >>$HIVE_SPARK_DEFAULT
 
     # upload pure spark jars to hdfs
-    pv $HOME_DIR/softwares/spark-3.0.0-bin-without-hadoop.tgz | tar -zx -C /home/$HADOOP_USER/
+    pv $HOME_DIR/softwares/spark-${spark_version}-bin-without-hadoop.tgz | tar -zx -C /home/$HADOOP_USER/
     chown $HADOOP_USER:$HADOOP_USER -R /home/$HADOOP_USER/
     ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -mkdir /spark-jars"
-    ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -put ~/spark-3.0.0-bin-without-hadoop/jars/* /spark-jars 1>/dev/null 2>&1"
+    ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -put ~/spark-${spark_version}-bin-without-hadoop/jars/* /spark-jars 1>/dev/null 2>&1"
 
     SPARK_YAR_JARS='
     <!--spark dependency location-->\
