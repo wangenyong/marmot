@@ -15,11 +15,13 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading zookeeper nodes
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 
 printf -- "${INFO}========== INSTALL ZOOKEEPER ==========${END}\n"
-if [ -d $PROJECT_DIR/apache-zookeeper* ]; then
+if [ -d $PROJECT_DIR/zookeeper* ]; then
     printf -- "${SUCCESS}========== ZOOKEEPER INSTALLED ==========${END}\n"
     printf -- "\n"
     exit 0
@@ -29,7 +31,8 @@ fi
 # install zookeeper
 #############################################################################################
 printf -- "${INFO}>>> Install zookeeper.${END}\n"
-pv $HOME_DIR/softwares/apache-zookeeper-3.5.7-bin.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hadoop/apache-zookeeper-${zookeeper_version}-bin.tar.gz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/apache-zookeeper* $PROJECT_DIR/zookeeper-${zookeeper_version}
 
 #############################################################################################
 # configure environment variables
@@ -38,13 +41,11 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure zookeeper environment variables.${END}\n"
 
 if [ $(grep -c "ZOOKEEPER_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/apache-zookeeper*
-    ZOOKEEPER_HOME="ZOOKEEPER_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    ZOOKEEPER_PATH="ZOOKEEPER_HOME="$PROJECT_DIR/zookeeper-${zookeeper_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** ZOOKEEPER_HOME *****' >>$MARMOT_PROFILE
-    echo "export "$ZOOKEEPER_HOME >>$MARMOT_PROFILE
+    echo "export "$ZOOKEEPER_PATH >>$MARMOT_PROFILE
 
     source /etc/profile
     printf -- "${SUCCESS}ZOOKEEPER_HOME configure successful: $ZOOKEEPER_HOME${END}\n"
