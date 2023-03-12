@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 
 printf -- "${INFO}========== INSTALL MYSQL ==========${END}\n"
 if [ ! -z "$1" ] && [[ "$1" =~ ^(-f|-F)$ ]]; then
@@ -44,11 +46,11 @@ fi
 #############################################################################################
 printf -- "${INFO}>>> Install mysql.${END}\n"
 
-rpm -ivh $HOME_DIR/softwares/mysql/01_mysql-community-common-5.7.16-1.el7.x86_64.rpm
-rpm -ivh $HOME_DIR/softwares/mysql/02_mysql-community-libs-5.7.16-1.el7.x86_64.rpm
-rpm -ivh $HOME_DIR/softwares/mysql/03_mysql-community-libs-compat-5.7.16-1.el7.x86_64.rpm
-rpm -ivh $HOME_DIR/softwares/mysql/04_mysql-community-client-5.7.16-1.el7.x86_64.rpm
-rpm -ivh $HOME_DIR/softwares/mysql/05_mysql-community-server-5.7.16-1.el7.x86_64.rpm
+rpm -ivh $HOME_DIR/softwares/mysql/01_mysql-community-common-${mysql_version}-*.rpm
+rpm -ivh $HOME_DIR/softwares/mysql/02_mysql-community-libs-${mysql_version}-*.rpm
+rpm -ivh $HOME_DIR/softwares/mysql/03_mysql-community-libs-compat-${mysql_version}-*.rpm
+rpm -ivh $HOME_DIR/softwares/mysql/04_mysql-community-client-${mysql_version}-*.rpm
+rpm -ivh $HOME_DIR/softwares/mysql/05_mysql-community-server-${mysql_version}-*.rpm
 
 #############################################################################################
 # configure mysql
