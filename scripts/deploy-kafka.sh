@@ -83,7 +83,7 @@ if [ ! -d "$KAFKA_HOME/logs" ]; then
     chown $HADOOP_USER:$HADOOP_USER -R $KAFKA_HOME
 
     # distributing kafka
-    sh $SCRIPT_DIR/msync $ZOOKEEPER_NODES $KAFKA_HOME
+    sh $SCRIPT_DIR/msync $KAFKA_NODES $KAFKA_HOME
     # distributing environment variables
     sh $SCRIPT_DIR/msync $KAFKA_NODES /etc/profile.d/marmot_env.sh
 
