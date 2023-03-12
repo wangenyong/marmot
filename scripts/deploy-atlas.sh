@@ -33,9 +33,9 @@ fi
 # install atlas
 #############################################################################################
 printf -- "${INFO}>>> Install atlas.${END}\n"
-pv $HOME_DIR/softwares/atlas/apache-atlas-2.1.0-server.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/atlas/apache-atlas-${atlas_version}-server.tar.gz | tar -zx -C $PROJECT_DIR/
 # modify directory name
-mv $PROJECT_DIR/apache-atlas* $PROJECT_DIR/atlas
+mv $PROJECT_DIR/apache-atlas* $PROJECT_DIR/atlas-${atlas_version}
 
 #############################################################################################
 # configure atlas
@@ -67,12 +67,12 @@ for node in ${kafka_nodes[@]}; do
     let i+=1
 done
 
-APPLICATION_PROPERTIES_FILE=$PROJECT_DIR/atlas/conf/atlas-application.properties
+APPLICATION_PROPERTIES_FILE=$PROJECT_DIR/atlas-${atlas_version}/conf/atlas-application.properties
 
 sed -i -r '/^atlas\.graph\.storage\.hostname=/s|.*|atlas\.graph\.storage\.hostname='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
 
-echo "# hbase conf dir" >>$PROJECT_DIR/atlas/conf/atlas-env.sh
-echo 'export HBASE_CONF_DIR='$HBASE_HOME/conf >>$PROJECT_DIR/atlas/conf/atlas-env.sh
+echo "# hbase conf dir" >>$PROJECT_DIR/atlas-${atlas_version}/conf/atlas-env.sh
+echo 'export HBASE_CONF_DIR='$HBASE_HOME/conf >>$PROJECT_DIR/atlas-${atlas_version}/conf/atlas-env.sh
 
 # -------------------------------------------------------------------------------------------
 # integrate solr
@@ -81,9 +81,9 @@ printf -- "\n"
 printf -- "${INFO}--> Integrate solo.${END}\n"
 sed -i -r '/^atlas\.graph\.index\.search\.solr\.zookeeper-url=/s|.*|atlas\.graph\.index\.search\.solr\.zookeeper-url='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
 
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr/bin/solr create -c vertex_index -d $PROJECT_DIR/atlas/conf/solr -shards 3 -replicationFactor 2"
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr/bin/solr create -c edge_index -d $PROJECT_DIR/atlas/conf/solr -shards 3 -replicationFactor 2"
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr/bin/solr create -c fulltext_index -d $PROJECT_DIR/atlas/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c vertex_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c edge_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c fulltext_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
 
 # -------------------------------------------------------------------------------------------
 # integrate kafka
@@ -100,7 +100,7 @@ sed -i -r '/^atlas\.kafka\.bootstrap\.servers=/s|.*|atlas\.kafka\.bootstrap\.ser
 # -------------------------------------------------------------------------------------------
 printf -- "\n"
 printf -- "${INFO}--> Configure altas server.${END}\n"
-sed -i -r '/^atlas\.rest\.address=/s|.*|atlas\.rest\.address=http://'$HDFS_NAMENODE':21000|' $APPLICATION_PROPERTIES_FILE
+sed -i -r '/^atlas\.rest\.address=/s|.*|atlas\.rest\.address=http://'$ATLAS_SERVER':21000|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^#atlas\.server\.run\.setup\.on\.start=/s|.*|atlas\.server\.run\.setup\.on\.start=false|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^atlas\.audit\.hbase\.zookeeper\.quorum=/s|.*|atlas\.audit\.hbase\.zookeeper\.quorum='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
 
@@ -120,8 +120,8 @@ LOGGER_CONFIG='
         <appender-ref ref="perf_appender" />\
     </logger>'
 
-sed -i -r '/<\/log4j:configuration>/i\'"$PERF_APPENDER" $PROJECT_DIR/atlas/conf/atlas-log4j.xml
-sed -i -r '/<\/log4j:configuration>/i\'"$LOGGER_CONFIG" $PROJECT_DIR/atlas/conf/atlas-log4j.xml
+sed -i -r '/<\/log4j:configuration>/i\'"$PERF_APPENDER" $PROJECT_DIR/atlas-${atlas_version}/conf/atlas-log4j.xml
+sed -i -r '/<\/log4j:configuration>/i\'"$LOGGER_CONFIG" $PROJECT_DIR/atlas-${atlas_version}/conf/atlas-log4j.xml
 
 # -------------------------------------------------------------------------------------------
 # integrate hive
@@ -144,7 +144,7 @@ if [ $(grep -c 'hive.exec.post.hooks' $HIVE_HOME/conf/hive-site.xml) -eq '0' ]; 
     sed -i -r '/<\/configuration>/i\'"$HIVE_HOOKS_CONFIG" $HIVE_HOME/conf/hive-site.xml
 fi
 # copy hive hook file
-ATLAS_HOOKS_TMP_DIR=$HOME_DIR/softwares/hivehook
+ATLAS_HOOKS_TMP_DIR=$HOME_DIR/softwares/atlas/hivehook
 if [ -d $ATLAS_HOOKS_TMP_DIR ]; then
     rm -rf $ATLAS_HOOKS_TMP_DIR
 fi
@@ -152,7 +152,7 @@ mkdir $ATLAS_HOOKS_TMP_DIR
 
 pv $HOME_DIR/softwares/atlas/apache-atlas-2.1.0-hive-hook.tar.gz | tar -zx -C $ATLAS_HOOKS_TMP_DIR --strip-components 1
 
-cp -r $ATLAS_HOOKS_TMP_DIR/* $PROJECT_DIR/atlas/
+cp -r $ATLAS_HOOKS_TMP_DIR/* $PROJECT_DIR/atlas-${atlas_version}/
 
 # configure hive env
 HIVE_ENV_FILE=$HIVE_HOME/conf/hive-env.sh
@@ -169,12 +169,12 @@ printf -- "${INFO}--> Force copy atlas-application.properties to hive conf.${END
 /bin/cp $APPLICATION_PROPERTIES_FILE $HIVE_HOME/conf/
 printf -- "\n"
 printf -- "${INFO}--> Force copy atlas hook jar to hive lib.${END}\n"
-/bin/cp -r $PROJECT_DIR/atlas/hook/hive/* $HIVE_HOME/lib/
+/bin/cp -r $PROJECT_DIR/atlas-${atlas_version}/hook/hive/* $HIVE_HOME/lib/
 
 #############################################################################################
 # modify permissions
 #############################################################################################
-chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/atlas
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/atlas-${atlas_version}
 chown $HADOOP_USER:$HADOOP_USER -R $HIVE_HOME/conf
 
 printf -- "\n"

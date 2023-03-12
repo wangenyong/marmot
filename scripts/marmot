@@ -13,6 +13,8 @@ printf -- '\n'
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading environment
 source /etc/profile
 # loading cluster nodes
