@@ -77,6 +77,8 @@ echo 'export HBASE_CONF_DIR='$HBASE_HOME/conf >>$PROJECT_DIR/atlas/conf/atlas-en
 # -------------------------------------------------------------------------------------------
 # integrate solr
 # -------------------------------------------------------------------------------------------
+printf -- "\n"
+printf -- "${INFO}--> Integrate solo.${END}\n"
 sed -i -r '/^atlas\.graph\.index\.search\.solr\.zookeeper-url=/s|.*|atlas\.graph\.index\.search\.solr\.zookeeper-url='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
 
 ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr/bin/solr create -c vertex_index -d $PROJECT_DIR/atlas/conf/solr -shards 3 -replicationFactor 2"
@@ -86,13 +88,18 @@ ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr/bin/solr create -c fulltext_ind
 # -------------------------------------------------------------------------------------------
 # integrate kafka
 # -------------------------------------------------------------------------------------------
+printf -- "\n"
+printf -- "${INFO}--> Integrate kafka.${END}\n"
 sed -i -r '/^atlas\.notification\.embedded=/s|.*|atlas\.notification\.embedded=false|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^atlas\.kafka\.data=/s|.*|atlas\.kafka\.data='$KAFKA_HOME'/data|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^atlas\.kafka\.zookeeper\.connect=/s|.*|atlas\.kafka\.zookeeper\.connect='$zookeeper_servers'/kafka|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^atlas\.kafka\.bootstrap\.servers=/s|.*|atlas\.kafka\.bootstrap\.servers='$kafka_servers'|' $APPLICATION_PROPERTIES_FILE
+
 # -------------------------------------------------------------------------------------------
 # configure altas server
 # -------------------------------------------------------------------------------------------
+printf -- "\n"
+printf -- "${INFO}--> Configure altas server.${END}\n"
 sed -i -r '/^atlas\.rest\.address=/s|.*|atlas\.rest\.address=http://'$HDFS_NAMENODE':21000|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^#atlas\.server\.run\.setup\.on\.start=/s|.*|atlas\.server\.run\.setup\.on\.start=false|' $APPLICATION_PROPERTIES_FILE
 sed -i -r '/^atlas\.audit\.hbase\.zookeeper\.quorum=/s|.*|atlas\.audit\.hbase\.zookeeper\.quorum='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
@@ -119,6 +126,8 @@ sed -i -r '/<\/log4j:configuration>/i\'"$LOGGER_CONFIG" $PROJECT_DIR/atlas/conf/
 # -------------------------------------------------------------------------------------------
 # integrate hive
 # -------------------------------------------------------------------------------------------
+printf -- "\n"
+printf -- "${INFO}--> Integrate hive.${END}\n"
 sed -i -r '$a\######### Hive Hook Configs #######' $APPLICATION_PROPERTIES_FILE
 sed -i -r '$a\atlas.hook.hive.synchronous=false' $APPLICATION_PROPERTIES_FILE
 sed -i -r '$a\atlas.hook.hive.numRetries=3' $APPLICATION_PROPERTIES_FILE
@@ -154,8 +163,13 @@ if [ ! -f "$HIVE_ENV_FILE" ]; then
 elif [ $(grep -c 'export HIVE_AUX_JARS_PATH' $HIVE_ENV_FILE) -eq '0' ]; then
     sed -i -r '$a\export HIVE_AUX_JARS_PATH='$PROJECT_DIR'\/atlas\/hook\/hive' $HIVE_ENV_FILE
 fi
-# force copy atlas-application.properties to hive conf
+
+printf -- "\n"
+printf -- "${INFO}--> Force copy atlas-application.properties to hive conf.${END}\n"
 /bin/cp $APPLICATION_PROPERTIES_FILE $HIVE_HOME/conf/
+printf -- "\n"
+printf -- "${INFO}--> Force copy atlas hook jar to hive lib.${END}\n"
+/bin/cp -r $PROJECT_DIR/atlas/hook/hive/* $HIVE_HOME/lib/
 
 #############################################################################################
 # modify permissions
