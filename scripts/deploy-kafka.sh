@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading kafka nodes
 IFS=',' read -ra kafka_nodes <<<$KAFKA_NODES
 
@@ -29,7 +31,8 @@ fi
 # install zookeeper
 #############################################################################################
 printf -- "${INFO}>>> Install kafka.${END}\n"
-pv $HOME_DIR/softwares/kafka_2.12-3.0.0.tgz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/kafka/kafka_${kafka_version}-3.0.0.tgz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/kafka* $PROJECT_DIR/kafka-${kafka_version}
 
 #############################################################################################
 # configure environment variables
@@ -38,13 +41,11 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure kafka environment variables.${END}\n"
 
 if [ $(grep -c "KAFKA_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/kafka*
-    KAFKA_HOME="KAFKA_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    KAFKA_PATH="KAFKA_HOME="$PROJECT_DIR/kafka-${kafka_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** KAFKA_HOME *****' >>$MARMOT_PROFILE
-    echo "export "$KAFKA_HOME >>$MARMOT_PROFILE
+    echo "export "$KAFKA_PATH >>$MARMOT_PROFILE
     echo 'export PATH=$PATH:$KAFKA_HOME/bin' >>$MARMOT_PROFILE
 
     source /etc/profile
