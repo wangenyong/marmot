@@ -15,8 +15,10 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading cluster nodes
-IFS=',' read -ra workers <<<$HADOOP_WORKERS
+IFS=',' read -ra hbase_nodes <<<$HBASE_NODES
 
 printf -- "${INFO}========== INSTALL HBASE ==========${END}\n"
 if [ -d $PROJECT_DIR/hbase* ]; then
@@ -29,7 +31,7 @@ fi
 # install hbase
 #############################################################################################
 printf -- "${INFO}>>> Install hbase.${END}\n"
-pv $HOME_DIR/softwares/hbase-2.4.11-bin.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hbase/hbase-${hbase_version}-bin.tar.gz | tar -zx -C $PROJECT_DIR/
 
 #############################################################################################
 # configure environment variables
@@ -38,9 +40,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hbase environment variables.${END}\n"
 
 if [ $(grep -c "HBASE_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/hbase*
-    HBASE_PATH="HBASE_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    HBASE_PATH="HBASE_HOME="$PROJECT_DIR/hbase-${hbase_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** HBASE_HOME *****' >>$MARMOT_PROFILE
@@ -75,7 +75,7 @@ chmod 755 $HBASE_SITE_FILE
 ZK_NODES='
     <property>\
         <name>hbase.zookeeper.quorum</name>\
-        <value>'$HADOOP_WORKERS'</value>\
+        <value>'$ZOOKEEPER_NODES'</value>\
         <description>The directory shared by RegionServers.</description>\
     </property>'
 
@@ -117,7 +117,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hbase regionservers.${END}\n"
 
 cat /dev/null >$HBASE_HOME/conf/regionservers
-for host in ${workers[@]}; do
+for host in ${hbase_nodes[@]}; do
     echo $host >>$HBASE_HOME/conf/regionservers
 done
 
@@ -130,10 +130,10 @@ printf -- "${INFO}>>> Distributing hbase to all cluster nodes.${END}\n"
 # modify permissions
 chown $HADOOP_USER:$HADOOP_USER -R $HBASE_HOME
 # distributing hive
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS $HBASE_HOME
+sh $SCRIPT_DIR/msync $HBASE_NODES $HBASE_HOME
 printf -- "\n"
 # distributing environment variables
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS /etc/profile.d/marmot_env.sh
+sh $SCRIPT_DIR/msync $HBASE_NODES /etc/profile.d/marmot_env.sh
 
 printf -- "\n"
 printf -- "${SUCCESS}========== HBASE INSTALL SUCCESSFUL ==========${END}\n"
