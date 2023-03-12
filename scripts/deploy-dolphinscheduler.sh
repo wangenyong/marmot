@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading environment
 source /etc/profile
 # loading dolphinscheduler nodes
@@ -24,7 +26,7 @@ IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 # loading hadoop nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
-DOLPHINSCHEDULER_HOME=$PROJECT_DIR/dolphinscheduler
+DOLPHINSCHEDULER_HOME=$PROJECT_DIR/dolphinscheduler-${dolphinscheduler_version}
 
 printf -- "${INFO}========== INSTALL DOLPHINSCHEDULER ==========${END}\n"
 if [ -d $DOLPHINSCHEDULER_HOME ]; then
@@ -36,12 +38,12 @@ fi
 #############################################################################################
 # install dolphinscheduler
 #############################################################################################
-DOLPHINSCHEDULER_TMP_DIR=$HOME_DIR/softwares/dolphinscheduler
+DOLPHINSCHEDULER_TMP_DIR=$HOME_DIR/softwares/dolphinscheduler/dolphinscheduler_tmp
 if [ -d $DOLPHINSCHEDULER_TMP_DIR ]; then
     rm -rf $DOLPHINSCHEDULER_TMP_DIR
 fi
 mkdir $DOLPHINSCHEDULER_TMP_DIR
-pv $HOME_DIR/softwares/apache-dolphinscheduler-2.0.8-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
+pv $HOME_DIR/softwares/dolphinscheduler/apache-dolphinscheduler-2.0.8-bin.tar.gz | tar -zx -C $DOLPHINSCHEDULER_TMP_DIR --strip-components 1
 # copy mysql driver
 cp $HOME_DIR/softwares/mysql/mysql-connector-java-5.1.27-bin.jar $DOLPHINSCHEDULER_TMP_DIR/lib/
 
