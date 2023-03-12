@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 
 printf -- "${INFO}========== INSTALL JAVA SDK ==========${END}\n"
 if [ -d $PROJECT_DIR/jdk* ]; then
@@ -39,7 +41,8 @@ fi
 # install java sdk
 #############################################################################################
 printf -- "${INFO}>>> Install java sdk.${END}\n"
-pv $HOME_DIR/softwares/jdk-8u212-linux-x64.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hadoop/jdk-8u212-*.tar.gz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/jdk* $PROJECT_DIR/jdk-${jdk_version}
 
 #############################################################################################
 # configure environment variables
@@ -48,9 +51,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure java environment variables.${END}\n"
 
 if [ $(grep -c "JAVA_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/jdk*
-    JDK_PATH="JAVA_HOME=$(pwd)"
-    cd - >/dev/null 2>&1
+    JDK_PATH="JAVA_HOME=$PROJECT_DIR/jdk-${jdk_version}"
 
     echo '#***** JAVA_HOME *****' >>$MARMOT_PROFILE
     echo "export $JDK_PATH" >>$MARMOT_PROFILE

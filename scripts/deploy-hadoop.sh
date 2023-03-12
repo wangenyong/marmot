@@ -15,6 +15,8 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading environment
 source /etc/profile
 # loading cluster nodes
@@ -31,7 +33,7 @@ fi
 # install hadoop
 #############################################################################################
 printf -- "${INFO}>>> Install hadoop.${END}\n"
-pv $HOME_DIR/softwares/hadoop-3.1.3.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hadoop/hadoop-${hadoop_version}.* | tar -zx -C $PROJECT_DIR/
 
 #############################################################################################
 # configure environment variables
@@ -40,10 +42,8 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hadoop environment variables.${END}\n"
 
 if [ $(grep -c "HADOOP_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/hadoop*
-    HADOOP_PATH="HADOOP_HOME="$(pwd)
-    HADOOP_HOME=$(pwd)
-    cd - >/dev/null 2>&1
+    HADOOP_PATH="HADOOP_HOME="$PROJECT_DIR/hadoop-${hadoop_version}
+    HADOOP_HOME=$PROJECT_DIR/hadoop-${hadoop_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** HADOOP_HOME *****' >>$MARMOT_PROFILE
@@ -65,7 +65,7 @@ fi
 #############################################################################################
 printf -- "\n"
 printf -- "${INFO}>>> Copy hadoop lzo jar file.${END}\n"
-cp $HOME_DIR/softwares/jars/hadoop-lzo-0.4.20.jar $HADOOP_HOME/share/hadoop/common
+cp $HOME_DIR/softwares/jars/hadoop-lzo-${hadoop_lzo_version}.jar $HADOOP_HOME/share/hadoop/common
 
 #############################################################################################
 # configure core-site.xml
