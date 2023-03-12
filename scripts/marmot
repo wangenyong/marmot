@@ -211,7 +211,7 @@ start)
         printf -- "${INFO}========== START SOLR ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}--> Start $host solr.${END}\n"
-            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr start"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr-${solr_version}/bin/solr start"
         done
         ;;
     "atlas")
@@ -269,7 +269,7 @@ stop)
         printf -- "${INFO}========== STOP SOLR ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}--> Stop $host solr.${END}\n"
-            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr stop"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr-${solr_version}/bin/solr stop"
         done
         ;;
     "atlas")
@@ -312,7 +312,7 @@ status)
         printf -- "${INFO}========== SOLR STATUS ==========${END}\n"
         for host in ${workers[@]}; do
             printf -- "${INFO}----- $host -----${END}\n"
-            ssh $SOLR_USER@$host "$PROJECT_DIR/solr/bin/solr status"
+            ssh $SOLR_USER@$host "$PROJECT_DIR/solr-${solr_version}/bin/solr status"
         done
         ;;
     *)
