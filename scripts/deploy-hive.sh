@@ -15,11 +15,13 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
 # loading cluster nodes
 IFS=',' read -ra workers <<<$HADOOP_WORKERS
 
 printf -- "${INFO}========== INSTALL HIVE ==========${END}\n"
-if [ -d $PROJECT_DIR/apache-hive* ]; then
+if [ -d $PROJECT_DIR/hive* ]; then
     printf -- "${SUCCESS}========== HIVE INSTALLED ==========${END}\n"
     printf -- "\n"
     exit 0
@@ -29,7 +31,8 @@ fi
 # install hive
 #############################################################################################
 printf -- "${INFO}>>> Install hive.${END}\n"
-pv $HOME_DIR/softwares/apache-hive-3.1.2-bin.tar.gz | tar -zx -C $PROJECT_DIR/
+pv $HOME_DIR/softwares/hadoop/apache-hive-${hive_version}-bin.tar.gz | tar -zx -C $PROJECT_DIR/
+mv $PROJECT_DIR/apache-hive* $PROJECT_DIR/hive-${hive_version}
 
 #############################################################################################
 # configure environment variables
@@ -38,9 +41,7 @@ printf -- "\n"
 printf -- "${INFO}>>> Configure hive environment variables.${END}\n"
 
 if [ $(grep -c "HIVE_HOME" $MARMOT_PROFILE) -eq '0' ]; then
-    cd $PROJECT_DIR/apache-hive*
-    HIVE_PATH="HIVE_HOME="$(pwd)
-    cd - >/dev/null 2>&1
+    HIVE_PATH="HIVE_HOME="$PROJECT_DIR/hive-${hive_version}
 
     echo -e >>$MARMOT_PROFILE
     echo '#***** HIVE_HOME *****' >>$MARMOT_PROFILE
@@ -114,7 +115,7 @@ HIVE_THRIFT_PORT='
 HIVE_THRIFT_HOST='
     <property>\
         <name>hive.server2.thrift.bind.host</name>\
-        <value>'$MYSQL_HOST'</value>\
+        <value>'$HIVE_SERVER'</value>\
     </property>'
 
 HIVE_API_AUTH='
@@ -138,7 +139,7 @@ HIVE_CLI_DB='
 HIVE_METASTORE_URIS='
     <property>\
         <name>hive.metastore.uris</name>\
-        <value>thrift://'$MYSQL_HOST':9083</value>\
+        <value>thrift://'$HIVE_SERVER':9083</value>\
     </property>'
 
 sed -i -r '/<\/configuration>/i\'"$MYSQL_URL_CONFIG" $HIVE_SITE_FILE
