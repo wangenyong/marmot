@@ -17,8 +17,6 @@ source $HOME_DIR/conf/config.conf
 source $HOME_DIR/conf/printf.conf
 # loading version file
 source $HOME_DIR/conf/version.conf
-# loading cluster nodes
-IFS=',' read -ra workers <<<$HADOOP_WORKERS
 # loading zookeeper nodes
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 
@@ -34,6 +32,10 @@ fi
 #############################################################################################
 printf -- "${INFO}>>> Install solr.${END}\n"
 pv $HOME_DIR/softwares/solr/solr-${solr_version}.tgz | tar -zx -C $PROJECT_DIR/
+
+if [ ! -d "$PROJECT_DIR/solr-${solr_version}" ]; then
+    mv $PROJECT_DIR/solr* $PROJECT_DIR/solr-${solr_version}
+fi
 
 #############################################################################################
 # configure solr
@@ -63,8 +65,8 @@ printf -- "${INFO}>>> Distributing solr to all cluster nodes.${END}\n"
 
 # modify permissions
 chown $SOLR_USER:$SOLR_USER -R $PROJECT_DIR/solr-${solr_version}
-# distributing hive
-sh $SCRIPT_DIR/msync $HADOOP_WORKERS $PROJECT_DIR/solr-${solr_version}
+# distributing solr
+sh $SCRIPT_DIR/msync $SOLR_NODES $PROJECT_DIR/solr-${solr_version}
 
 printf -- "\n"
 printf -- "${SUCCESS}========== SOLR INSTALL SUCCESSFUL ==========${END}\n"
