@@ -31,7 +31,7 @@ fi
 # install kettle
 #############################################################################################
 printf -- "${INFO}>>> Install kettle.${END}\n"
-unzip -o $HOME_DIR/softwares/pdi-ce-7.1.0.0-12.zip -d $PROJECT_DIR/ | pv -l >/dev/null
+unzip -o $HOME_DIR/softwares/etl/pdi-ce-7.1.0.0-12.zip -d $PROJECT_DIR/ | pv -l >/dev/null
 
 #############################################################################################
 # configure kettle
