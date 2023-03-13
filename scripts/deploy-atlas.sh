@@ -174,8 +174,8 @@ printf -- "${INFO}--> Force copy atlas hook jar to hive lib.${END}\n"
 /bin/cp -r $PROJECT_DIR/atlas-${atlas_version}/hook/hive/* $HIVE_HOME/lib/
 
 # restart hive
-SCRIPT_DIR/marmot stop hive
-SCRIPT_DIR/marmot start hive
+$SCRIPT_DIR/marmot stop hive
+$SCRIPT_DIR/marmot start hive
 
 #############################################################################################
 # modify permissions
