@@ -34,7 +34,7 @@
 [Latest Release Url](https://github.com/wangenyong/marmot/releases/tag/v0.0.3)
 
 ### Softwares dependencies
-[Baidu Netdisk Url](https://pan.baidu.com/s/1koS5BsZcj-6DTjGW2_eEaw?pwd=n4am)
+[Baidu Netdisk Url](https://pan.baidu.com/s/1wHoahGvCu1NIWNyKG6s7NQ?pwd=40zf)
 
 ## Install
 Copy script files to first node of cluster.
