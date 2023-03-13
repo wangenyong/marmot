@@ -72,6 +72,26 @@ function stop_hive() {
     [ "$server2pid" ] && kill $server2pid || printf -- "${WARN}HiveServer2 have not started.${END}\n"
 }
 
+function start_prometheus() {
+    printf -- "${INFO}--> Start prometheus server.${END}\n"
+    prometheus_pid=$(check_process prometheus 9090)
+    cmd="ssh $HADOOP_USER@$PROMETHEUS_SERVER \"cd $PROJECT_DIR/prometheus-${prometheus_version}; nohup ./prometheus --config.file=prometheus.yml > ./prometheus.log 2>&1 &\""
+    [ -z "$prometheus_pid" ] && eval $cmd || printf -- "${WARN}Prometheus server started.${END}\n"
+    printf -- "${INFO}--> Start prometheus pushgateway.${END}\n"
+    pushgateway_pid=$(check_process pushgateway 9091)
+    cmd="ssh $HADOOP_USER@$PROMETHEUS_PUSH_GATEWAY \"cd $PROJECT_DIR/pushgateway-${pushgateway_version}; nohup ./pushgateway --web.listen-address :9091 > ./pushgateway.log 2>&1 &\""
+    [ -z "$pushgateway_pid" ] && eval $cmd || printf -- "${WARN}Prometheus pushgateway started.${END}\n"
+}
+
+function stop_prometheus() {
+    printf -- "${INFO}--> Stop prometheus server.${END}\n"
+    prometheus_pid=$(check_process prometheus 9090)
+    [ "$prometheus_pid" ] && kill $prometheus_pid || printf -- "${WARN}Prometheus server have not started.${END}\n"
+    printf -- "${INFO}--> Stop prometheus pushgateway.${END}\n"
+    pushgateway_pid=$(check_process pushgateway 9091)
+    [ "$pushgateway_pid" ] && kill $pushgateway_pid || printf -- "${WARN}Prometheus pushgateway have not started.${END}\n"
+}
+
 case "$1" in
 install)
     case "$2" in
@@ -162,6 +182,17 @@ install)
             printf -- '\n'
         fi
         ;;
+    "pm")
+        if [ $HADOOP_HOME ] && [ -d $HADOOP_HOME ]; then
+            sh $SCRIPT_DIR/deploy-prometheus.sh
+            printf -- '\n'
+            printf -- '\n'
+        else
+            printf -- "${WARN}The hadoop haven't been installed. You should install it first.${END}\n"
+            printf -- "You can install hadoop by command: ${BOLD}${NORMAL}marmot install hadoop${END}\n"
+            printf -- '\n'
+        fi
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot install { hadoop | ds | hbase | kafka }${END}\n"
         printf -- '\n'
@@ -219,6 +250,10 @@ start)
     "atlas")
         printf -- "${INFO}========== START ATLAS ==========${END}\n"
         ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas-${atlas_version}/bin/atlas_start.py"
+        ;;
+    "pm")
+        printf -- "${INFO}========== START PROMETHEUS ==========${END}\n"
+        start_prometheus
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot start { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
@@ -278,6 +313,10 @@ stop)
         printf -- "${INFO}========== STOP ATLAS ==========${END}\n"
         ssh $HADOOP_USER@$HDFS_NAMENODE "$PROJECT_DIR/atlas-${atlas_version}/bin/atlas_stop.py"
         ;;
+    "pm")
+        printf -- "${INFO}========== STOP PROMETHEUS ==========${END}\n"
+        stop_prometheus
+        ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot stop { hadoop | zk | ds | hbase | kafka | solr }${END}\n"
         printf -- '\n'
@@ -294,7 +333,7 @@ status)
         done
         printf -- "${INFO}----- hive services status -----${END}\n"
         check_process HiveMetastore 9083 >/dev/null && printf -- "${SUCCESS}HiveMetastore running normally.${END}\n" || printf -- "${WARN}HiveMetastore running abnormally.${END}\n"
-        check_process HiveServer2 10000 >/dev/null && printf -- "${SUCCESS}HiveServer2 running normally${END}\n" || printf -- "${WARN}HiveServer2 running abnormally.${END}\n"
+        check_process HiveServer2 10000 >/dev/null && printf -- "${SUCCESS}HiveServer2 running normally.${END}\n" || printf -- "${WARN}HiveServer2 running abnormally.${END}\n"
         ;;
     "zk")
         printf -- "${INFO}========== ZOOKEEPER STATUS ==========${END}\n"
@@ -316,6 +355,11 @@ status)
             printf -- "${INFO}----- $host -----${END}\n"
             ssh $SOLR_USER@$host "$PROJECT_DIR/solr-${solr_version}/bin/solr status"
         done
+        ;;
+    "pm")
+        printf -- "${INFO}========== PROMETHEUS STATUS ==========${END}\n"
+        check_process prometheus 9090 >/dev/null && printf -- "${SUCCESS}Prometheus server running normally.${END}\n" || printf -- "${WARN}Prometheus server running abnormally.${END}\n"
+        check_process pushgateway 9091 >/dev/null && printf -- "${SUCCESS}Prometheus pushgateway running normally.${END}\n" || printf -- "${WARN}Prometheus pushgateway running abnormally.${END}\n"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka | solr }${END}\n"

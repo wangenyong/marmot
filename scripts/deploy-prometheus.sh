@@ -37,6 +37,8 @@ pv $HOME_DIR/softwares/prometheus/prometheus-${prometheus_version}.*.tar.gz | ta
 # modify directory name
 mv $PROJECT_DIR/prometheus* $PROJECT_DIR/prometheus-${prometheus_version}
 
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/prometheus-${prometheus_version}
+
 #############################################################################################
 # configure prometheus
 #############################################################################################
@@ -59,7 +61,7 @@ sed -i -r '$a\  - job_name: "pushgateway"' $CONFIG_YML
 sed -i -r '$a\    static_configs:' $CONFIG_YML
 sed -i -r '$a\      - targets: ["'$PROMETHEUS_PUSH_GATEWAY':9091"]' $CONFIG_YML
 sed -i -r '$a\        labels:' $CONFIG_YML
-sed -i -r '$a\        instance: pushgateway' $CONFIG_YML
+sed -i -r '$a\          instance: pushgateway' $CONFIG_YML
 
 # -------------------------------------------------------------------------------------------
 # configure node exporter
@@ -92,6 +94,8 @@ pv $HOME_DIR/softwares/prometheus/pushgateway-${pushgateway_version}.*.tar.gz | 
 # modify directory name
 mv $PROJECT_DIR/pushgateway* $PROJECT_DIR/pushgateway-${pushgateway_version}
 
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/pushgateway-${pushgateway_version}
+
 #############################################################################################
 # install prometheus node exporter
 #############################################################################################
@@ -100,3 +104,51 @@ printf -- "${INFO}>>> Install prometheus node exporter.${END}\n"
 pv $HOME_DIR/softwares/prometheus/node_exporter-${node_exporter_version}.*.tar.gz | tar -zx -C $PROJECT_DIR/
 # modify directory name
 mv $PROJECT_DIR/node_exporter* $PROJECT_DIR/node_exporter-${node_exporter_version}
+
+# -------------------------------------------------------------------------------------------
+# distributing node exporter
+# -------------------------------------------------------------------------------------------
+printf -- "${INFO}--> Distributing prometheus node exporter.${END}\n"
+
+# modify permissions
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/node_exporter-${node_exporter_version}
+# distributing node exporter
+sh $SCRIPT_DIR/msync $PROMETHEUS_NODES $PROJECT_DIR/node_exporter-${node_exporter_version}
+
+# -------------------------------------------------------------------------------------------
+# configure node exporter autostart 
+# -------------------------------------------------------------------------------------------
+printf -- "${INFO}--> Configure node exporter autostart.${END}\n"
+
+NODE_EXPORTER_SERVICE=/usr/lib/systemd/system/node_exporter.service
+
+if [ ! -f $NODE_EXPORTER_SERVICE ]; then
+    touch $NODE_EXPORTER_SERVICE
+    echo '[Unit]' >>$NODE_EXPORTER_SERVICE
+    echo 'Description=node_export' >>$NODE_EXPORTER_SERVICE
+    echo 'Documentation=https://github.com/prometheus/node_exporter' >>$NODE_EXPORTER_SERVICE
+    echo 'After=network.target' >>$NODE_EXPORTER_SERVICE
+    echo -e >>$NODE_EXPORTER_SERVICE
+    echo '[Service]' >>$NODE_EXPORTER_SERVICE
+    echo 'Type=simple' >>$NODE_EXPORTER_SERVICE
+    echo 'User='$HADOOP_USER >>$NODE_EXPORTER_SERVICE
+    echo "ExecStart=$PROJECT_DIR/node_exporter-${node_exporter_version}/node_exporter" >>$NODE_EXPORTER_SERVICE
+    echo 'Restart=on-failure' >>$NODE_EXPORTER_SERVICE
+    echo -e >>$NODE_EXPORTER_SERVICE
+    echo '[Install]' >>$NODE_EXPORTER_SERVICE
+    echo 'WantedBy=multi-user.target' >>$NODE_EXPORTER_SERVICE
+
+    sh $SCRIPT_DIR/msync $PROMETHEUS_NODES $NODE_EXPORTER_SERVICE
+
+    for host in ${prometheus_nodes[@]}; do
+        ssh $ADMIN_USER@$host "systemctl enable node_exporter.service"
+        ssh $ADMIN_USER@$host "systemctl start node_exporter.service"
+    done
+
+    printf -- "${SUCCESS}Configure node exporter autostart successful.${END}\n"
+else
+    printf -- "${WARN}Configure node exporter autostart is complete.${END}\n"
+fi
+
+printf -- "\n"
+printf -- "${SUCCESS}========== PROMETHEUS INSTALL SUCCESSFUL ==========${END}\n"
