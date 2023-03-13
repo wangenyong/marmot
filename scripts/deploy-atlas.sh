@@ -15,11 +15,9 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
-# loading cluster nodes
-IFS=',' read -ra workers <<<$HADOOP_WORKERS
 # loading zookeeper nodes
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
-
+# loading kafka nodes
 IFS=',' read -ra kafka_nodes <<<$KAFKA_NODES
 
 printf -- "${INFO}========== INSTALL ATLAS ==========${END}\n"
@@ -81,9 +79,9 @@ printf -- "\n"
 printf -- "${INFO}--> Integrate solo.${END}\n"
 sed -i -r '/^atlas\.graph\.index\.search\.solr\.zookeeper-url=/s|.*|atlas\.graph\.index\.search\.solr\.zookeeper-url='$zookeeper_servers'|' $APPLICATION_PROPERTIES_FILE
 
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c vertex_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c edge_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
-ssh $SOLR_USER@$HDFS_NAMENODE "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c fulltext_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$ATLAS_SERVER "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c vertex_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$ATLAS_SERVER "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c edge_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
+ssh $SOLR_USER@$ATLAS_SERVER "$PROJECT_DIR/solr-${solr_version}/bin/solr create -c fulltext_index -d $PROJECT_DIR/atlas-${atlas_version}/conf/solr -shards 3 -replicationFactor 2"
 
 # -------------------------------------------------------------------------------------------
 # integrate kafka

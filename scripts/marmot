@@ -55,11 +55,11 @@ function check_process() {
 function start_hive() {
     printf -- "${INFO}--> Start HiveMetastore.${END}\n"
     metapid=$(check_process HiveMetastore 9083)
-    cmd="ssh $HADOOP_USER@$MYSQL_HOST nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
+    cmd="ssh $HADOOP_USER@$HIVE_SERVER nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
     [ -z "$metapid" ] && eval $cmd || printf -- "${WARN}Metastroe started.${END}\n"
     printf -- "${INFO}--> Start HiveServer2.${END}\n"
     server2pid=$(check_process HiveServer2 10000)
-    cmd="ssh $HADOOP_USER@$MYSQL_HOST nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
+    cmd="ssh $HADOOP_USER@$HIVE_SERVER nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
     [ -z "$server2pid" ] && eval $cmd || printf -- "${WARN}Hiveserver2 started.${END}\n"
 }
 
