@@ -88,7 +88,7 @@ function start_prometheus() {
     [ -z "$pushgateway_pid" ] && eval $cmd || printf -- "${WARN}Prometheus pushgateway started.${END}\n"
 
     printf -- "${INFO}--> Start grafana.${END}\n"
-    grafana_pid=$(check_process grafana-server 3000)
+    grafana_pid=$(check_process grafana 3000)
     cmd="ssh $HADOOP_USER@$PROMETHEUS_SERVER \"cd $PROJECT_DIR/grafana-${grafana_version}; nohup ./bin/grafana-server web > ./grafana.log 2>&1 &\""
     [ -z "$grafana_pid" ] && eval $cmd || printf -- "${WARN}Grafana started.${END}\n"
     
@@ -104,7 +104,7 @@ function stop_prometheus() {
     [ "$pushgateway_pid" ] && kill $pushgateway_pid || printf -- "${WARN}Prometheus pushgateway have not started.${END}\n"
 
     printf -- "${INFO}--> Stop grafana.${END}\n"
-    grafana_pid=$(check_process grafana-server 3000)
+    grafana_pid=$(check_process grafana 3000)
     [ "$grafana_pid" ] && kill $grafana_pid || printf -- "${WARN}Grafana have not started.${END}\n"
 }
 
@@ -376,7 +376,7 @@ status)
         printf -- "${INFO}========== PROMETHEUS STATUS ==========${END}\n"
         check_process prometheus 9090 >/dev/null && printf -- "${SUCCESS}Prometheus server running normally.${END}\n" || printf -- "${WARN}Prometheus server running abnormally.${END}\n"
         check_process pushgateway 9091 >/dev/null && printf -- "${SUCCESS}Prometheus pushgateway running normally.${END}\n" || printf -- "${WARN}Prometheus pushgateway running abnormally.${END}\n"
-        check_process grafana-server 3000 >/dev/null && printf -- "${SUCCESS}Grafana running normally.${END}\n" || printf -- "${WARN}Grafana running abnormally.${END}\n"
+        check_process grafana 3000 >/dev/null && printf -- "${SUCCESS}Grafana running normally.${END}\n" || printf -- "${WARN}Grafana running abnormally.${END}\n"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka | solr }${END}\n"
