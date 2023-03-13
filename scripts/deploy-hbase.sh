@@ -33,6 +33,10 @@ fi
 printf -- "${INFO}>>> Install hbase.${END}\n"
 pv $HOME_DIR/softwares/hbase/hbase-${hbase_version}-bin.tar.gz | tar -zx -C $PROJECT_DIR/
 
+if [ ! -d "$PROJECT_DIR/hbase-${hbase_version}" ]; then
+    mv $PROJECT_DIR/hbase* $PROJECT_DIR/hbase-${hbase_version}
+fi
+
 #############################################################################################
 # configure environment variables
 #############################################################################################
