@@ -470,7 +470,7 @@ rm)
         fi
         ;;
     "solr")
-        if [ -d $PROJECT_DIR/solr ]; then
+        if [ -d "$PROJECT_DIR/solr-${solr_version}" ]; then
             printf -- "${WARN}Do you want to remove solr.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
             read choice
@@ -490,7 +490,7 @@ rm)
         fi
         ;;
     "atlas")
-        if [ -d $PROJECT_DIR/atlas ]; then
+        if [ -d "$PROJECT_DIR/atlas-${atlas_version}" ]; then
             printf -- "${WARN}Do you want to remove atlas.${END}\n"
             printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
             read choice
@@ -500,6 +500,32 @@ rm)
                     printf -- "${INFO}----- remove $host atlas -----${END}\n"
                     ssh $host "rm -rf $PROJECT_DIR/atlas-${atlas_version}"
                 done
+                ;;
+            [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
+            *) exit ;;
+            esac
+        else
+            printf -- "${WARN}The solr haven't been installed.${END}\n"
+            printf -- '\n'
+        fi
+        ;;
+    "pm")
+        if [ -d "$PROJECT_DIR/prometheus-${prometheus_version}" ]; then
+            printf -- "${WARN}Do you want to remove prometheus.${END}\n"
+            printf -- " ${ERROR}[y|Y]${END} or ${ERROR}[n|N]${END} : "
+            read choice
+            case $choice in
+            [yY]*)
+                for host in ${workers[@]}; do
+                    printf -- "${INFO}----- remove $host prometheus node exporter -----${END}\n"
+                    ssh $host "systemctl stop node_exporter.service"
+                    ssh $host "rm -f /usr/lib/systemd/system/node_exporter.service"
+                    ssh $host "rm -rf $PROJECT_DIR/node_exporter-${node_exporter_version}"
+                done
+                printf -- "${INFO}----- remove prometheus pushgateway -----${END}\n"
+                rm -rf $PROJECT_DIR/pushgateway-${pushgateway_version}
+                printf -- "${INFO}----- remove prometheus server -----${END}\n"
+                rm -rf $PROJECT_DIR/prometheus-${prometheus_version}
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
             *) exit ;;
