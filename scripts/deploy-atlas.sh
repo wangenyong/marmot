@@ -15,6 +15,10 @@ HOME_DIR="$(dirname $SCRIPT_DIR)"
 source $HOME_DIR/conf/config.conf
 # loading printf file
 source $HOME_DIR/conf/printf.conf
+# loading version file
+source $HOME_DIR/conf/version.conf
+# loading environment
+source /etc/profile
 # loading zookeeper nodes
 IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 # loading kafka nodes
@@ -34,6 +38,8 @@ printf -- "${INFO}>>> Install atlas.${END}\n"
 pv $HOME_DIR/softwares/atlas/apache-atlas-${atlas_version}-server.tar.gz | tar -zx -C $PROJECT_DIR/
 # modify directory name
 mv $PROJECT_DIR/apache-atlas* $PROJECT_DIR/atlas-${atlas_version}
+
+chown $SOLR_USER:$SOLR_USER -R $PROJECT_DIR/atlas-${atlas_version}
 
 #############################################################################################
 # configure atlas
