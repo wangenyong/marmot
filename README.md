@@ -208,3 +208,4 @@ cd marmot
 * Solr http://192.168.10.101:8983
 * Atlas http://192.168.10.101:21000
 * Prometheus http://192.168.10.101:9090/
+* Grafana http://192.168.10.101:3000/

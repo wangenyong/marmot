@@ -24,6 +24,8 @@ IFS=',' read -ra zookeeper_nodes <<<$ZOOKEEPER_NODES
 IFS=',' read -ra kafka_nodes <<<$KAFKA_NODES
 IFS=',' read -ra kettle_nodes <<<$KETTLE_NODES
 IFS=',' read -ra dolphinscheduler_nodes <<<$DOLPHINSCHEDULER_NODES
+IFS=',' read -ra solr_nodes <<<$SOLR_NODES
+IFS=',' read -ra prometheus_nodes <<<$PROMETHEUS_NODES
 
 # no arguments
 if [ ${#@} -eq 0 ]; then
@@ -57,6 +59,7 @@ function start_hive() {
     metapid=$(check_process HiveMetastore 9083)
     cmd="ssh $HADOOP_USER@$HIVE_SERVER nohup hive --service metastore >$HIVE_HOME/logs/metastore.log 2>&1 &"
     [ -z "$metapid" ] && eval $cmd || printf -- "${WARN}Metastroe started.${END}\n"
+
     printf -- "${INFO}--> Start HiveServer2.${END}\n"
     server2pid=$(check_process HiveServer2 10000)
     cmd="ssh $HADOOP_USER@$HIVE_SERVER nohup hiveserver2 >$HIVE_HOME/logs/hiveServer2.log 2>&1 &"
@@ -67,6 +70,7 @@ function stop_hive() {
     printf -- "${INFO}--> Stop HiveMetastore.${END}\n"
     metapid=$(check_process HiveMetastore 9083)
     [ "$metapid" ] && kill $metapid || printf -- "${WARN}Metastroe have not started.${END}\n"
+
     printf -- "${INFO}--> Stop HiveServer2.${END}\n"
     server2pid=$(check_process HiveServer2 10000)
     [ "$server2pid" ] && kill $server2pid || printf -- "${WARN}HiveServer2 have not started.${END}\n"
@@ -77,19 +81,31 @@ function start_prometheus() {
     prometheus_pid=$(check_process prometheus 9090)
     cmd="ssh $HADOOP_USER@$PROMETHEUS_SERVER \"cd $PROJECT_DIR/prometheus-${prometheus_version}; nohup ./prometheus --config.file=prometheus.yml > ./prometheus.log 2>&1 &\""
     [ -z "$prometheus_pid" ] && eval $cmd || printf -- "${WARN}Prometheus server started.${END}\n"
+
     printf -- "${INFO}--> Start prometheus pushgateway.${END}\n"
     pushgateway_pid=$(check_process pushgateway 9091)
-    cmd="ssh $HADOOP_USER@$PROMETHEUS_PUSH_GATEWAY \"cd $PROJECT_DIR/pushgateway-${pushgateway_version}; nohup ./pushgateway --web.listen-address :9091 > ./pushgateway.log 2>&1 &\""
+    cmd="ssh $HADOOP_USER@$PROMETHEUS_SERVER \"cd $PROJECT_DIR/pushgateway-${pushgateway_version}; nohup ./pushgateway --web.listen-address :9091 > ./pushgateway.log 2>&1 &\""
     [ -z "$pushgateway_pid" ] && eval $cmd || printf -- "${WARN}Prometheus pushgateway started.${END}\n"
+
+    printf -- "${INFO}--> Start grafana.${END}\n"
+    grafana_pid=$(check_process grafana-server 3000)
+    cmd="ssh $HADOOP_USER@$PROMETHEUS_SERVER \"cd $PROJECT_DIR/grafana-${grafana_version}; nohup ./bin/grafana-server web > ./grafana.log 2>&1 &\""
+    [ -z "$grafana_pid" ] && eval $cmd || printf -- "${WARN}Grafana started.${END}\n"
+    
 }
 
 function stop_prometheus() {
     printf -- "${INFO}--> Stop prometheus server.${END}\n"
     prometheus_pid=$(check_process prometheus 9090)
     [ "$prometheus_pid" ] && kill $prometheus_pid || printf -- "${WARN}Prometheus server have not started.${END}\n"
+
     printf -- "${INFO}--> Stop prometheus pushgateway.${END}\n"
     pushgateway_pid=$(check_process pushgateway 9091)
     [ "$pushgateway_pid" ] && kill $pushgateway_pid || printf -- "${WARN}Prometheus pushgateway have not started.${END}\n"
+
+    printf -- "${INFO}--> Stop grafana.${END}\n"
+    grafana_pid=$(check_process grafana-server 3000)
+    [ "$grafana_pid" ] && kill $grafana_pid || printf -- "${WARN}Grafana have not started.${END}\n"
 }
 
 case "$1" in
@@ -360,6 +376,7 @@ status)
         printf -- "${INFO}========== PROMETHEUS STATUS ==========${END}\n"
         check_process prometheus 9090 >/dev/null && printf -- "${SUCCESS}Prometheus server running normally.${END}\n" || printf -- "${WARN}Prometheus server running abnormally.${END}\n"
         check_process pushgateway 9091 >/dev/null && printf -- "${SUCCESS}Prometheus pushgateway running normally.${END}\n" || printf -- "${WARN}Prometheus pushgateway running abnormally.${END}\n"
+        check_process grafana-server 3000 >/dev/null && printf -- "${SUCCESS}Grafana running normally.${END}\n" || printf -- "${WARN}Grafana running abnormally.${END}\n"
         ;;
     *)
         printf -- "${BOLD}USAGE: ${NORMAL}marmot status { hadoop | zk | ds | kafka | solr }${END}\n"
@@ -476,7 +493,7 @@ rm)
             read choice
             case $choice in
             [yY]*)
-                for host in ${workers[@]}; do
+                for host in ${solr_nodes[@]}; do
                     printf -- "${INFO}----- remove $host solr -----${END}\n"
                     ssh $host "rm -rf $PROJECT_DIR/solr-${solr_version}"
                 done
@@ -496,10 +513,7 @@ rm)
             read choice
             case $choice in
             [yY]*)
-                for host in ${workers[@]}; do
-                    printf -- "${INFO}----- remove $host atlas -----${END}\n"
-                    ssh $host "rm -rf $PROJECT_DIR/atlas-${atlas_version}"
-                done
+                rm -rf $PROJECT_DIR/atlas-${atlas_version}
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
             *) exit ;;
@@ -516,7 +530,7 @@ rm)
             read choice
             case $choice in
             [yY]*)
-                for host in ${workers[@]}; do
+                for host in ${prometheus_nodes[@]}; do
                     printf -- "${INFO}----- remove $host prometheus node exporter -----${END}\n"
                     ssh $host "systemctl stop node_exporter.service"
                     ssh $host "rm -f /usr/lib/systemd/system/node_exporter.service"
@@ -526,12 +540,14 @@ rm)
                 rm -rf $PROJECT_DIR/pushgateway-${pushgateway_version}
                 printf -- "${INFO}----- remove prometheus server -----${END}\n"
                 rm -rf $PROJECT_DIR/prometheus-${prometheus_version}
+                printf -- "${INFO}----- remove grafana -----${END}\n"
+                rm -rf $PROJECT_DIR/grafana-${grafana_version}
                 ;;
             [nN]*) printf -- "${WARN}Remove cancelled.${END}\n" ;;
             *) exit ;;
             esac
         else
-            printf -- "${WARN}The solr haven't been installed.${END}\n"
+            printf -- "${WARN}The prometheus haven't been installed.${END}\n"
             printf -- '\n'
         fi
         ;;

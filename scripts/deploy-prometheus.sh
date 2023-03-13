@@ -59,7 +59,7 @@ printf -- "${INFO}--> Configure prometheus pushgateway.${END}\n"
 sed -i -r '$G' $CONFIG_YML
 sed -i -r '$a\  - job_name: "pushgateway"' $CONFIG_YML
 sed -i -r '$a\    static_configs:' $CONFIG_YML
-sed -i -r '$a\      - targets: ["'$PROMETHEUS_PUSH_GATEWAY':9091"]' $CONFIG_YML
+sed -i -r '$a\      - targets: ["'$PROMETHEUS_SERVER':9091"]' $CONFIG_YML
 sed -i -r '$a\        labels:' $CONFIG_YML
 sed -i -r '$a\          instance: pushgateway' $CONFIG_YML
 
@@ -149,6 +149,21 @@ if [ ! -f $NODE_EXPORTER_SERVICE ]; then
 else
     printf -- "${WARN}Configure node exporter autostart is complete.${END}\n"
 fi
+
+#############################################################################################
+# install grafana
+#############################################################################################
+printf -- "\n"
+printf -- "${INFO}>>> Install grafana.${END}\n"
+
+pv $HOME_DIR/softwares/prometheus/grafana-enterprise-${grafana_version}.*.tar.gz | tar -zx -C $PROJECT_DIR/
+
+if [ ! -d "$PROJECT_DIR/grafana-${grafana_version}" ]; then
+    mv $PROJECT_DIR/grafana* $PROJECT_DIR/grafana-${grafana_version}
+fi
+
+chown $HADOOP_USER:$HADOOP_USER -R $PROJECT_DIR/grafana-${grafana_version}
+
 
 printf -- "\n"
 printf -- "${SUCCESS}========== PROMETHEUS INSTALL SUCCESSFUL ==========${END}\n"
