@@ -35,6 +35,10 @@ fi
 printf -- "${INFO}>>> Install hadoop.${END}\n"
 pv $HOME_DIR/softwares/hadoop/hadoop-${hadoop_version}.* | tar -zx -C $PROJECT_DIR/
 
+if [ ! -d "$PROJECT_DIR/hadoop-${hadoop_version}" ]; then
+    mv $PROJECT_DIR/hadoop* $PROJECT_DIR/hadoop-${hadoop_version}
+fi
+
 #############################################################################################
 # configure environment variables
 #############################################################################################

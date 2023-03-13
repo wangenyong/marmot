@@ -171,7 +171,7 @@ if [ ! -f $HIVE_SPARK_DEFAULT ]; then
     echo "spark.driver.memory 1g" >>$HIVE_SPARK_DEFAULT
 
     # upload pure spark jars to hdfs
-    pv $HOME_DIR/softwares/spark-${spark_version}-bin-without-hadoop.tgz | tar -zx -C /home/$HADOOP_USER/
+    pv $HOME_DIR/softwares/hadoop/spark-${spark_version}-bin-without-hadoop.tgz | tar -zx -C /home/$HADOOP_USER/
     chown $HADOOP_USER:$HADOOP_USER -R /home/$HADOOP_USER/
     ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -mkdir /spark-jars"
     ssh $HADOOP_USER@$HDFS_NAMENODE "hadoop fs -put ~/spark-${spark_version}-bin-without-hadoop/jars/* /spark-jars 1>/dev/null 2>&1"
