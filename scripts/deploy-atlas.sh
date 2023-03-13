@@ -39,8 +39,6 @@ pv $HOME_DIR/softwares/atlas/apache-atlas-${atlas_version}-server.tar.gz | tar -
 # modify directory name
 mv $PROJECT_DIR/apache-atlas* $PROJECT_DIR/atlas-${atlas_version}
 
-chown $SOLR_USER:$SOLR_USER -R $PROJECT_DIR/atlas-${atlas_version}
-
 #############################################################################################
 # configure atlas
 #############################################################################################
@@ -174,6 +172,10 @@ printf -- "${INFO}--> Force copy atlas-application.properties to hive conf.${END
 printf -- "\n"
 printf -- "${INFO}--> Force copy atlas hook jar to hive lib.${END}\n"
 /bin/cp -r $PROJECT_DIR/atlas-${atlas_version}/hook/hive/* $HIVE_HOME/lib/
+
+# restart hive
+SCRIPT_DIR/marmot stop hive
+SCRIPT_DIR/marmot start hive
 
 #############################################################################################
 # modify permissions
